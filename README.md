@@ -43,3 +43,6 @@ python -c "from story_media_orchestrator.ui import launch; launch()"
 脚本会生成或复用用户级 `MICROCODEX_SIDECAR_TOKEN`，配置 sibling 路径和 MiniMax H3
 ComfyUI 地址，启动 sidecar 并执行健康检查；不会打印 token。Rust capability 已启动时，
 可传入 `-CapabilityUrl` 和 `-CapabilityToken`。
+
+也可以直接使用 UI 的“保存配置 / 加载配置 / 启动本地栈”按钮。配置保存在当前用户的
+`%LOCALAPPDATA%\StoryMediaOrchestrator\config.json`，不进入 Git；token 输入框默认隐藏。
