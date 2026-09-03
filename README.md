@@ -24,3 +24,12 @@ Rust 进程、读取其凭据或在 import 时发起网络请求。
 `STORY_VIDEO_TURBO`、`STORY_VIDEO_STEPS`；视频连接使用
 `MINIMAX_H3_COMFYUI_BASE_URL` 与 `MINIMAX_H3_COMFYUI_TOKEN`。密钥仍由下游
 provider 按各自安全配置读取。
+
+本地界面：
+
+```powershell
+python -c "from story_media_orchestrator.ui import launch; launch()"
+```
+
+界面默认只显示并运行 fake preview；真实 runner 由宿主注入。`workspace.toml` 记录三个
+独立 agent 的路径环境变量和契约，当前采用 external-workspaces 模式，不复制或改写三个仓库。

@@ -1,0 +1,18 @@
+version = 1
+name = "story-media-orchestrator"
+
+[agents.story_campaign]
+path_env = "STORY_CAMPAIGN_ROOT"
+contract = "story-package/v1"
+
+[agents.story_image]
+path_env = "STORY_IMAGE_AGENT_ROOT"
+contract = "image-production-plan/v1"
+
+[agents.story_video]
+path_env = "STORY_VIDEO_AGENT_ROOT"
+contract = "video-generation-pipeline/v2"
+
+[workspace]
+mode = "external-workspaces"
+note = "Repositories remain independently versioned; monorepo vendoring is a later migration step."
