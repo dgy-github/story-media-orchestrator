@@ -33,3 +33,13 @@ python -c "from story_media_orchestrator.ui import launch; launch()"
 
 界面默认只显示并运行 fake preview；真实 runner 由宿主注入。`workspace.toml` 记录三个
 独立 agent 的路径环境变量和契约，当前采用 external-workspaces 模式，不复制或改写三个仓库。
+
+一键配置并启动本地 sidecar：
+
+```powershell
+.\scripts\start-local-stack.ps1
+```
+
+脚本会生成或复用用户级 `MICROCODEX_SIDECAR_TOKEN`，配置 sibling 路径和 MiniMax H3
+ComfyUI 地址，启动 sidecar 并执行健康检查；不会打印 token。Rust capability 已启动时，
+可传入 `-CapabilityUrl` 和 `-CapabilityToken`。
