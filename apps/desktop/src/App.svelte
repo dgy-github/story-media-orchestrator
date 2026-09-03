@@ -1,25 +1,35 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  let config = { story_model: "configured-by-story-runtime", image_model: "wan2.2-t2i-flash", image_size: "720*1280", video_model: "minimax_h3_fl2va", comfyui_url: "http://127.0.0.1:8000", sidecar_url: "http://127.0.0.1:8765" };
-  let keys = { dashscope: "", sidecar: "", capability: "" };
+  type Tab = "home" | "story" | "image" | "video";
+  let tab: Tab = "home";
+  let status = "就绪";
+  let run: any = null;
+  let storyText = "一个动漫女孩在黄昏的街道上转身离开，镜头保持中景。";
   let storyInput = '{\n  "title": "我的短剧",\n  "scenes": [{"summary": "人物转身离开", "source_spans": ["scene-1"]}]\n}';
-  let status = "就绪"; let run: any = null;
-  async function save() { await invoke("save_settings", { settings: config, credentials: keys }); status = "已保存到本机"; }
-  async function generateToken() { const token: string = await invoke("generate_sidecar_token"); keys.sidecar = token; keys.capability = token; status = "已自动生成并配置运行凭据"; }
-  async function start() { try { JSON.parse(storyInput); } catch { status = "输入不是有效 JSON"; return; } status = "已提交调度"; run = await invoke("start_media_run", { storyInput }); poll(); }
-  async function poll() { if (!run) return; run = await invoke("get_media_run", { runId: run.run_id }); if (run.status !== "succeeded" && run.status !== "failed") setTimeout(poll, 700); }
+  let imagePrompt = "动漫女孩，黄昏街道，中景，角色服装和场景保持一致，首帧与尾帧构图连续";
+  let imageSize = "720*1280";
+  let videoPrompt = "动漫女孩在黄昏街道转身离开，动作完整，保持角色身份、服装、镜头和光线连续";
+  let videoSteps = 20;
+  let videoTurbo = false;
+  async function generateStory() { status = "故事生成中"; tab = "home"; storyInput = JSON.stringify({ title: storyText.slice(0, 20), scenes: [{ summary: storyText, source_spans: ["scene-1"] }] }, null, 2); status = "故事已生成"; }
+  async function generateImage() { status = "图片阶段已准备"; tab = "home"; }
+  async function generateVideo() { status = "视频阶段已准备"; tab = "home"; }
+  async function startPipeline() { try { JSON.parse(storyInput); } catch { status = "故事 JSON 格式错误"; tab = "story"; return; } status = "流水线已提交"; run = await invoke("start_media_run", { storyInput }); poll(); }
+  async function poll() { if (!run) return; run = await invoke("get_media_run", { runId: run.run_id }); if (!["succeeded", "failed"].includes(run.status)) setTimeout(poll, 700); }
+  function stageState(index: number) { return run?.stages?.[index]?.state ?? "待开始"; }
 </script>
 <main>
-  <header><div><h1>Story Media Orchestrator</h1><p>Rust/Tauri 统一调度 · 故事 → 图片 → 视频</p></div><span class="badge">{status}</span></header>
-  <section class="grid">
-    <div class="card"><h2>模型与服务</h2>
-      <label>故事模型<input bind:value={config.story_model}></label><label>图片模型<input bind:value={config.image_model}></label><label>图片尺寸<input bind:value={config.image_size}></label><label>视频模型<input bind:value={config.video_model}></label><label>ComfyUI URL<input bind:value={config.comfyui_url}></label><label>Sidecar URL<input bind:value={config.sidecar_url}></label>
-    </div>
-    <div class="card"><h2>API key / 凭据</h2><label>DashScope API key<input type="password" bind:value={keys.dashscope}></label><label>Sidecar token（自动管理）<input type="password" bind:value={keys.sidecar}></label><label>Capability token（自动管理）<input type="password" bind:value={keys.capability}></label><div class="actions"><button on:click={generateToken}>自动生成运行凭据</button><button class="primary" on:click={save}>保存配置</button></div><small>如果你之前在 BugleCat / .nanocodex 配过 vl_api_key，DashScope 可以留空。两个运行 token 由界面自动生成，不需要手填。</small></div>
-  </section>
-  <section class="card input"><h2>故事输入</h2><p class="muted">输入故事 JSON，调度器会把它传给故事 agent。</p><textarea bind:value={storyInput} spellcheck="false"></textarea></section>
-  <section class="card run"><div class="runhead"><h2>运行调度</h2><button class="primary" on:click={start}>开始单场景运行</button></div>
-    {#if run}<div class="stages">{#each run.stages as stage}<div class:active={stage.state === "running"} class:done={stage.state === "succeeded"} class="stage"><strong>{stage.name}</strong><span>{stage.state}</span>{#if stage.artifact}<code>{stage.artifact}</code>{/if}{#if stage.retryable}<button on:click={() => status = `已请求重试：${stage.name}`}>重试</button>{/if}</div>{/each}</div>{:else}<p class="muted">尚未运行。点击开始后，Rust 调度器会按阶段记录状态和 artifact。</p>{/if}
-  </section>
-  {#if run}<section class="card output"><h2>运行输出</h2><pre>{JSON.stringify(run, null, 2)}</pre></section>{/if}
+  <header><div><h1>Story Media Orchestrator</h1><p>统一创作工作台 · 故事 → 图片 → 视频</p></div><span class="badge">{status}</span></header>
+  <nav><button class:active={tab === "home"} on:click={() => tab = "home"}>首页流水线</button><button class:active={tab === "story"} on:click={() => tab = "story"}>生成故事</button><button class:active={tab === "image"} on:click={() => tab = "image"}>生成图片</button><button class:active={tab === "video"} on:click={() => tab = "video"}>生成视频</button></nav>
+  {#if tab === "home"}
+    <section class="card hero"><div><h2>自动化流水线</h2><p class="muted">从一个故事输入开始，按顺序生成故事包、首帧/尾帧图片和 5 秒视频。</p></div><button class="primary large" on:click={startPipeline}>开始全流程</button></section>
+    <section class="flow"><div class:done={stageState(0) === "succeeded"} class:active={stageState(0) === "running"} class="flowstage" on:click={() => tab = "story"}><span>01</span><h3>生成故事</h3><strong>{stageState(0)}</strong><small>输入故事梗概，输出 story-package</small></div><i>→</i><div class:done={stageState(1) === "succeeded"} class:active={stageState(1) === "running"} class="flowstage" on:click={() => tab = "image"}><span>02</span><h3>生成图</h3><strong>{stageState(1)}</strong><small>首帧 / 尾帧与角色连续性</small></div><i>→</i><div class:done={stageState(2) === "succeeded"} class:active={stageState(2) === "running"} class="flowstage" on:click={() => tab = "video"}><span>03</span><h3>生成视频</h3><strong>{stageState(2)}</strong><small>MiniMax H3 · 5 秒动作单元</small></div></section>
+    {#if run}<section class="card output"><h2>本次运行</h2><pre>{JSON.stringify(run, null, 2)}</pre></section>{:else}<section class="card mutedbox"><p>尚未开始运行。你可以先分别编辑三个阶段，也可以直接点击“开始全流程”。</p></section>{/if}
+  {:else if tab === "story"}
+    <section class="card workspace"><h2>生成故事</h2><p class="muted">输入故事梗概，生成可供后续生图和生视频使用的结构化故事包。</p><label>故事梗概<textarea bind:value={storyText}></textarea></label><div class="actions"><button class="primary" on:click={generateStory}>生成故事包</button><button on:click={() => tab = "home"}>返回流水线</button></div><label>story-package/v1 输出<textarea class="tall" bind:value={storyInput} spellcheck="false"></textarea></label></section>
+  {:else if tab === "image"}
+    <section class="card workspace"><h2>生成图片</h2><p class="muted">根据故事场景生成首帧/尾帧，后续视频阶段会引用 artifact。</p><label>图片提示词<textarea bind:value={imagePrompt}></textarea></label><label>图片尺寸<input bind:value={imageSize}></label><div class="actions"><button class="primary" on:click={generateImage}>生成首帧 / 尾帧</button><button on:click={() => tab = "home"}>返回流水线</button></div><div class="artifact empty">生成后将在这里显示图片 artifact、质量门禁和连续性检查。</div></section>
+  {:else}
+    <section class="card workspace"><h2>生成视频</h2><p class="muted">使用首帧/尾帧和动作约束生成单条 5 秒视频。</p><label>视频动作提示词<textarea bind:value={videoPrompt}></textarea></label><div class="row"><label>Steps<input type="number" min="1" max="100" bind:value={videoSteps}></label><label class="check"><input type="checkbox" bind:checked={videoTurbo}> Turbo 模式</label></div><div class="actions"><button class="primary" on:click={generateVideo}>生成 5 秒视频</button><button on:click={() => tab = "home"}>返回流水线</button></div><div class="artifact empty">生成后将在这里显示视频 artifact、任务轮询、质量检测和重试按钮。</div></section>
+  {/if}
 </main>
