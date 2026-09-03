@@ -11,10 +11,10 @@
   let videoPrompt = "动漫女孩在黄昏街道转身离开，动作完整，保持角色身份、服装、镜头和光线连续";
   let videoSteps = 20;
   let videoTurbo = false;
-  async function generateStory() { status = "故事生成中"; tab = "home"; storyInput = JSON.stringify({ title: storyText.slice(0, 20), scenes: [{ summary: storyText, source_spans: ["scene-1"] }] }, null, 2); status = "故事已生成"; }
-  async function generateImage() { status = "图片阶段已准备"; tab = "home"; }
-  async function generateVideo() { status = "视频阶段已准备"; tab = "home"; }
-  async function startPipeline() { try { JSON.parse(storyInput); } catch { status = "故事 JSON 格式错误"; tab = "story"; return; } status = "流水线已提交"; run = await invoke("start_media_run", { storyInput }); poll(); }
+  async function generateStory() { storyInput = JSON.stringify({ title: storyText.slice(0, 20), scenes: [{ summary: storyText, source_spans: ["scene-1"] }] }, null, 2); await startPipeline("故事"); }
+  async function generateImage() { await startPipeline("图片"); }
+  async function generateVideo() { await startPipeline("视频"); }
+  async function startPipeline(stage = "全流程") { try { JSON.parse(storyInput); } catch { status = "故事 JSON 格式错误"; tab = "story"; return; } status = `${stage}阶段已提交`; tab = "home"; run = await invoke("start_media_run", { storyInput }); poll(); }
   async function poll() { if (!run) return; run = await invoke("get_media_run", { runId: run.run_id }); if (!["succeeded", "failed"].includes(run.status)) setTimeout(poll, 700); }
   function stageState(index: number) { return run?.stages?.[index]?.state ?? "待开始"; }
 </script>
