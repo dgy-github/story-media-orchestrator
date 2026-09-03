@@ -50,13 +50,16 @@ def build_runtime(*, story_runner: Callable[..., dict[str, Any]], config: Runtim
     video_pkg = _import_from_root(cfg.video_root, "story_video_agent")
     image_workflow = image_pkg.ImagePromptWorkflow("story-media-orchestrator")
     provider = image_provider or image_pkg.DashScopeImageProvider.from_nanocodex_config()
+    if image_provider is None:
+        provider.model = cfg.models.image_model
+        provider.size = provider._normalize_size(cfg.models.image_size)
     video_workflow = video_pkg.VideoPromptWorkflow("story-media-orchestrator")
     comfy = video_client or video_pkg.ComfyUIAdapter.from_environment()
     registry = ArtifactRegistry(cfg.artifact_root)
     return SingleSceneOrchestrator(
         StoryCampaignAdapter(story_runner).run,
         StoryImageAdapter(image_workflow, provider, registry).run,
-        StoryVideoAdapter(video_workflow, comfy=comfy, registry=registry).run,
+        StoryVideoAdapter(video_workflow, comfy=comfy, registry=registry, models=cfg.models).run,
     )
 
 

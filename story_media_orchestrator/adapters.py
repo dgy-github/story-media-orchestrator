@@ -42,8 +42,8 @@ class StoryImageAdapter:
 
 class StoryVideoAdapter:
     """Build a controlled video pipeline and optionally execute it via ComfyUI."""
-    def __init__(self, workflow: Any, *, comfy: Any = None, registry: ArtifactRegistry | None = None) -> None:
-        self.workflow, self.comfy, self.registry = workflow, comfy, registry
+    def __init__(self, workflow: Any, *, comfy: Any = None, registry: ArtifactRegistry | None = None, models: Any = None) -> None:
+        self.workflow, self.comfy, self.registry, self.models = workflow, comfy, registry, models
 
     def run(self, *, image_ref: str, story_spans: list[str], shot: dict[str, Any],
             action_unit: dict[str, Any] | None = None, prompt: str | None = None) -> dict[str, Any]:
@@ -58,6 +58,7 @@ class StoryVideoAdapter:
             if not prompt:
                 raise ValueError("prompt is required for ComfyUI execution")
             from story_video_agent import build_minimax_h3_workflow
-            result["execution"] = self.comfy.run_to_artifact(build_minimax_h3_workflow(prompt=prompt), self.registry)
+            turbo = getattr(self.models, "video_turbo", False) if self.models is not None else False
+            result["execution"] = self.comfy.run_to_artifact(build_minimax_h3_workflow(prompt=prompt, turbo=turbo), self.registry)
             result["status"] = result["execution"]["state"]
         return result
