@@ -7,3 +7,6 @@
 本目录只依赖契约（`story-package/v1`、`image-production-plan/v1`、
 `video-generation-pipeline/v2`），通过注入 callable 连接实际 agent；不复制三个项目代码。
 默认测试使用 fake agent，不调用真实模型、服务器或密钥。
+
+当前真实接入仍需由宿主注入三个 agent callable；故事 campaign 的 Rust capability、图片
+DashScope provider 和视频 MiniMax H3 ComfyUI provider 不会在导入本包时自动启动。

@@ -1,6 +1,8 @@
 import unittest
 
-from story_media_orchestrator import SingleSceneOrchestrator, OrchestrationError
+from story_media_orchestrator import ArtifactRegistry, SingleSceneOrchestrator, OrchestrationError
+import tempfile
+from pathlib import Path
 
 
 class PipelineTests(unittest.TestCase):
@@ -35,6 +37,16 @@ class PipelineTests(unittest.TestCase):
         runner = SingleSceneOrchestrator(story, self.orchestrator.image_agent, self.orchestrator.video_agent)
         with self.assertRaises(OrchestrationError):
             runner.run(story_input={})
+
+    def test_artifact_registry_is_content_addressed_and_verifies_integrity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            registry = ArtifactRegistry(Path(directory))
+            ref = registry.put_json({"schema": "story-package/v1", "id": "s1"})
+            self.assertEqual(registry.get_json(ref)["id"], "s1")
+            digest = ref.rsplit("/", 1)[-1]
+            Path(directory, digest).write_text("{}", encoding="utf-8")
+            with self.assertRaises(RuntimeError):
+                registry.get_json(ref)
 
 
 if __name__ == "__main__":
