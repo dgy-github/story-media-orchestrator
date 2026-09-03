@@ -11,6 +11,7 @@ from typing import Any, Callable
 from .adapters import StoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
 from .pipeline import SingleSceneOrchestrator
 from .registry import ArtifactRegistry
+from .config import OrchestratorConfig
 
 
 @dataclass(frozen=True)
@@ -57,3 +58,12 @@ def build_runtime(*, story_runner: Callable[..., dict[str, Any]], config: Runtim
         StoryImageAdapter(image_workflow, provider, registry).run,
         StoryVideoAdapter(video_workflow, comfy=comfy, registry=registry).run,
     )
+
+
+def build_runtime_from_environment(*, story_runner: Callable[..., dict[str, Any]],
+                                   image_provider: Any | None = None,
+                                   video_client: Any | None = None) -> SingleSceneOrchestrator:
+    cfg = OrchestratorConfig.from_environment()
+    return build_runtime(story_runner=story_runner,
+                         config=RuntimeConfig(cfg.image_root, cfg.video_root, cfg.artifact_root),
+                         image_provider=image_provider, video_client=video_client)

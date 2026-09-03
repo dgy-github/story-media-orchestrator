@@ -17,3 +17,10 @@ DashScope provider 和视频 MiniMax H3 ComfyUI provider 不会在导入本包�
 `from_nanocodex_config()`，视频 provider 使用 `ComfyUIAdapter.from_environment()`。
 故事 runner 必须由主项目 Rust capability-backed runtime 注入；本包不会自行创建
 Rust 进程、读取其凭据或在 import 时发起网络请求。
+
+统一模型配置入口为 `OrchestratorConfig.from_environment()` 或
+`build_runtime_from_environment(story_runner=...)`。支持 `STORY_MODEL`、
+`STORY_IMAGE_MODEL`、`STORY_IMAGE_SIZE`、`STORY_VIDEO_MODEL`、
+`STORY_VIDEO_TURBO`、`STORY_VIDEO_STEPS`；视频连接使用
+`MINIMAX_H3_COMFYUI_BASE_URL` 与 `MINIMAX_H3_COMFYUI_TOKEN`。密钥仍由下游
+provider 按各自安全配置读取。
