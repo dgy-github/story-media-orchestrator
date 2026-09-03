@@ -10,3 +10,10 @@
 
 当前真实接入仍需由宿主注入三个 agent callable；故事 campaign 的 Rust capability、图片
 DashScope provider 和视频 MiniMax H3 ComfyUI provider 不会在导入本包时自动启动。
+
+正式装配入口为 `build_runtime(story_runner=...)`。它读取
+`STORY_IMAGE_AGENT_ROOT`、`STORY_VIDEO_AGENT_ROOT` 和可选的
+`STORY_MEDIA_ARTIFACT_ROOT`，图片 provider 使用 `DashScopeImageProvider` 的
+`from_nanocodex_config()`，视频 provider 使用 `ComfyUIAdapter.from_environment()`。
+故事 runner 必须由主项目 Rust capability-backed runtime 注入；本包不会自行创建
+Rust 进程、读取其凭据或在 import 时发起网络请求。
