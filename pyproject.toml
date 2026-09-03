@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "story-media-orchestrator"
+version = "0.1.0a1"
+description = "Contract-first orchestration for story, image and video agents"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+include = ["story_media_orchestrator*"]
