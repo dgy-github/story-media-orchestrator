@@ -9,6 +9,34 @@ import os
 import subprocess
 from pathlib import Path
 from typing import Any, Callable
+from urllib import request as url_request
+
+
+DEFAULTS = {
+    "STORY_MODEL": "configured-by-story-runtime",
+    "STORY_IMAGE_MODEL": "wan2.2-t2i-flash",
+    "STORY_IMAGE_SIZE": "720*1280",
+    "STORY_VIDEO_MODEL": "minimax_h3_fl2va",
+    "STORY_VIDEO_TURBO": "false",
+    "STORY_VIDEO_STEPS": "20",
+}
+
+
+def validate_ui_config(config: dict[str, str]) -> list[str]:
+    errors = []
+    for key in ("STORY_CAMPAIGN_ROOT", "STORY_IMAGE_AGENT_ROOT", "STORY_VIDEO_AGENT_ROOT"):
+        if not config.get(key) or not Path(config[key]).is_dir():
+            errors.append(f"路径不存在: {key}")
+    if not config.get("MINIMAX_H3_COMFYUI_BASE_URL", "").startswith(("http://", "https://")):
+        errors.append("ComfyUI URL 必须是 http(s) 地址")
+    if config.get("STORY_VIDEO_TURBO", "false").lower() not in {"true", "false"}:
+        errors.append("视频 turbo 必须是 true 或 false")
+    try:
+        steps = int(config.get("STORY_VIDEO_STEPS", "20"))
+        if not 1 <= steps <= 100: raise ValueError
+    except ValueError:
+        errors.append("视频 steps 必须是 1-100 的整数")
+    return errors
 
 
 def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any | None = None) -> None:
@@ -21,7 +49,10 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         "Video agent path": "STORY_VIDEO_AGENT_ROOT",
         "Story model": "STORY_MODEL",
         "Image model": "STORY_IMAGE_MODEL",
+        "Image size": "STORY_IMAGE_SIZE",
         "Video model": "STORY_VIDEO_MODEL",
+        "Video turbo": "STORY_VIDEO_TURBO",
+        "Video steps": "STORY_VIDEO_STEPS",
         "ComfyUI URL": "MINIMAX_H3_COMFYUI_BASE_URL",
         "Sidecar URL": "STORY_SIDECAR_URL",
         "Sidecar token": "STORY_SIDECAR_TOKEN",
@@ -35,6 +66,8 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         entry = ttk.Entry(form, width=70, show="•" if "token" in label.lower() else "")
         entry.grid(row=row, column=1, sticky="ew", pady=4)
         values[key] = entry
+        if key.endswith("_ROOT"):
+            ttk.Button(form, text="浏览", command=lambda e=entry: e.insert(0, filedialog.askdirectory())).grid(row=row, column=2, padx=4)
     form.columnconfigure(1, weight=1)
     status = tk.Text(root, height=12, state="disabled")
     status.pack(fill="both", expand=True, padx=16, pady=8)
@@ -44,6 +77,9 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
 
     def execute() -> None:
         config = {key: entry.get().strip() for key, entry in values.items()}
+        errors = validate_ui_config(config)
+        if errors:
+            write("[config-error] " + "；".join(errors)); return
         write("[queued] story → image → video")
         story_path = filedialog.askopenfilename(title="选择 story-package 输入 JSON", filetypes=(("JSON", "*.json"),))
         if not story_path:
@@ -66,8 +102,12 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
 
     config_path = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StoryMediaOrchestrator" / "config.json"
     def save_config() -> None:
+        config = {key: entry.get().strip() for key, entry in values.items()}
+        errors = validate_ui_config(config)
+        if errors:
+            write("[config-error] " + "；".join(errors)); return
         config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(json.dumps({key: entry.get() for key, entry in values.items()}, ensure_ascii=False, indent=2), encoding="utf-8")
+        config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
         write(f"[saved] 配置已保存：{config_path}")
 
     def load_config() -> None:
@@ -88,9 +128,30 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
                          cwd=str(script.parent.parent), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         write("[started] 正在启动本地 sidecar，请查看 sidecar.log")
 
+    def test_connections() -> None:
+        config = {key: entry.get().strip() for key, entry in values.items()}
+        errors = validate_ui_config(config)
+        if errors:
+            write("[config-error] " + "；".join(errors)); return
+        def worker() -> None:
+            try:
+                with url_request.urlopen(config["MINIMAX_H3_COMFYUI_BASE_URL"] + "/system_stats?token=", timeout=8) as response:
+                    root.after(0, write, f"[ok] MiniMax H3 ComfyUI HTTP {response.status}")
+            except Exception as exc:
+                root.after(0, write, f"[failed] ComfyUI: {type(exc).__name__}")
+            if config.get("STORY_SIDECAR_URL") and config.get("STORY_SIDECAR_TOKEN"):
+                try:
+                    req = url_request.Request(config["STORY_SIDECAR_URL"] + "/health", headers={"Authorization": "Bearer " + config["STORY_SIDECAR_TOKEN"]})
+                    with url_request.urlopen(req, timeout=8) as response: root.after(0, write, f"[ok] story sidecar HTTP {response.status}")
+                except Exception as exc: root.after(0, write, f"[failed] story sidecar: {type(exc).__name__}")
+        threading.Thread(target=worker, daemon=True).start()
+
     buttons = ttk.Frame(root); buttons.pack(pady=4)
     ttk.Button(buttons, text="保存配置", command=save_config).pack(side="left", padx=4)
     ttk.Button(buttons, text="加载配置", command=load_config).pack(side="left", padx=4)
     ttk.Button(buttons, text="启动本地栈", command=start_stack).pack(side="left", padx=4)
+    ttk.Button(buttons, text="测试连接", command=test_connections).pack(side="left", padx=4)
+    for key, default in DEFAULTS.items():
+        values[key].insert(0, default)
     load_config()
     root.mainloop()
