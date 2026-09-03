@@ -46,3 +46,23 @@ ComfyUI 地址，启动 sidecar 并执行健康检查；不会打印 token。Rus
 
 也可以直接使用 UI 的“保存配置 / 加载配置 / 启动本地栈”按钮。配置保存在当前用户的
 `%LOCALAPPDATA%\StoryMediaOrchestrator\config.json`，不进入 Git；token 输入框默认隐藏。
+
+## Rust/Tauri 桌面端
+
+正式桌面端位于 `apps/desktop`，复用 Rust/Tauri 技术路线。它提供：
+
+- Rust 保存模型设置，API key/token 通过系统凭据存储；
+- Svelte 配置页和自动生成 sidecar token；
+- Rust 调度入口及故事→图片→视频阶段状态；
+- 每阶段 artifact、失败可重试状态展示。
+
+开发运行：
+
+```powershell
+cd apps/desktop
+npm install
+npm run tauri dev
+```
+
+当前桌面端的阶段推进命令已用本地状态机验证；接入真实 sibling runtime 时，将
+`start_media_run` 的阶段执行替换为现有 Python/Rust adapter 调用，界面契约保持不变。
