@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import tkinter as tk
-from tkinter import ttk
-from typing import Callable
+from tkinter import ttk, filedialog
+import json
+import threading
+from typing import Any, Callable
 
 
-def launch(run: Callable[[dict[str, str]], str] | None = None) -> None:
+def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any | None = None) -> None:
     root = tk.Tk()
     root.title("Story Media Orchestrator")
     root.geometry("760x520")
@@ -36,11 +38,22 @@ def launch(run: Callable[[dict[str, str]], str] | None = None) -> None:
     def execute() -> None:
         config = {key: entry.get().strip() for key, entry in values.items()}
         write("[queued] story → image → video")
-        try:
-            message = run(config) if run else "[preview] fake run only; no provider request sent"
-            write(message)
-        except Exception as exc:
-            write(f"[failed] {type(exc).__name__}: {exc}")
+        story_path = filedialog.askopenfilename(title="选择 story-package 输入 JSON", filetypes=(("JSON", "*.json"),))
+        if not story_path:
+            write("[cancelled] 未选择故事输入")
+            return
+        def worker() -> None:
+            try:
+                story_input = json.loads(open(story_path, encoding="utf-8").read())
+                if orchestrator is not None:
+                    result = orchestrator.run(story_input=story_input)
+                    message = "[succeeded] " + json.dumps({"status": result.get("status"), "scene_index": result.get("scene_index")}, ensure_ascii=False)
+                else:
+                    message = run(config) if run else "[preview] fake run only; no provider request sent"
+                root.after(0, write, message)
+            except Exception as exc:
+                root.after(0, write, f"[failed] {type(exc).__name__}: {exc}")
+        threading.Thread(target=worker, daemon=True).start()
 
     ttk.Button(root, text="Run single-scene preview", command=execute).pack(pady=8)
     root.mainloop()

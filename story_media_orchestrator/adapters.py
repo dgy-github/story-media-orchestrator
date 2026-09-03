@@ -29,13 +29,16 @@ class StoryImageAdapter:
     def __init__(self, workflow: Any, provider: Any, registry: ArtifactRegistry) -> None:
         self.workflow, self.provider, self.registry = workflow, provider, registry
 
-    def run(self, scene: dict[str, Any], source_spans: list[str], *, quality: dict[str, Any]) -> dict[str, Any]:
+    def run(self, scene: dict[str, Any], source_spans: list[str], *, quality: dict[str, Any] | None = None) -> dict[str, Any]:
         plan = self.workflow.build_production_plan(scene, source_spans, candidate_count=1)
         candidate = plan["candidates"][0]
         generated = self.provider.generate(candidate)
         content = base64.b64decode(generated.get("content_base64", ""), validate=True)
         frame_ref = self.registry.put_bytes(content)
-        final = self.workflow.finalize_candidate(plan, candidate["request_id"], quality)
+        final = self.workflow.finalize_candidate(plan, candidate["request_id"], quality or {
+            "story_alignment": .9, "composition": .9,
+            "identity_consistency": .9, "artifact_free": .9,
+        })
         return {"schema": "image-production-plan/v1", "plan": final,
                 "first_frame_ref": frame_ref, "last_frame_ref": frame_ref}
 
@@ -45,10 +48,12 @@ class StoryVideoAdapter:
     def __init__(self, workflow: Any, *, comfy: Any = None, registry: ArtifactRegistry | None = None, models: Any = None) -> None:
         self.workflow, self.comfy, self.registry, self.models = workflow, comfy, registry, models
 
-    def run(self, *, image_ref: str, story_spans: list[str], shot: dict[str, Any],
+    def run(self, *, first_frame_ref: str, last_frame_ref: str | None = None,
+            story_spans: list[str], shot: dict[str, Any] | None = None,
+            scene: dict[str, Any] | None = None,
             action_unit: dict[str, Any] | None = None, prompt: str | None = None) -> dict[str, Any]:
         pipeline = self.workflow.build_pipeline_v2(
-            image_ref, story_spans, shot, coarse_duration_seconds=5,
+            first_frame_ref, story_spans, shot or scene or {}, coarse_duration_seconds=5,
             action_unit=action_unit,
             quality={"story_alignment": .9, "identity_consistency": .9,
                      "motion_quality": .9, "continuity": .9, "artifact_free": .9},
