@@ -12,10 +12,18 @@ use uuid::Uuid;
 
 fn credential(name:&str)->Result<keyring::Entry,String>{ keyring::Entry::new("story-media-orchestrator", name).map_err(|e|e.to_string()) }
 
+fn legacy_dashscope_key() -> Option<String> {
+  let profile=std::env::var("USERPROFILE").ok()?;
+  let text=std::fs::read_to_string(std::path::PathBuf::from(profile).join(".nanocodex\\config.toml")).ok()?;
+  for key in ["dashscope_workspace_key", "vl_api_key"] { for line in text.lines() { let line=line.trim(); if line.starts_with(&(key.to_string()+" =")) { let value=line.split_once('=')?.1.trim().trim_matches('"').trim_matches('\''); if !value.is_empty(){ return Some(value.to_string()); } } } }
+  None
+}
+
 #[tauri::command] fn save_settings(settings:Settings, credentials:Credentials)->Result<(),String>{
   let path=std::env::var("LOCALAPPDATA").unwrap_or_else(|_|".".into()); let dir=std::path::PathBuf::from(path).join("StoryMediaOrchestrator"); std::fs::create_dir_all(&dir).map_err(|e|e.to_string())?;
   std::fs::write(dir.join("settings.json"), serde_json::to_vec_pretty(&settings).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
-  for (name,value) in [("dashscope",credentials.dashscope),("sidecar",credentials.sidecar),("capability",credentials.capability)] { if !value.is_empty(){ credential(name)?.set_password(&value).map_err(|e|e.to_string())?; } }
+  let dashscope = if credentials.dashscope.is_empty() { legacy_dashscope_key().unwrap_or_default() } else { credentials.dashscope };
+  for (name,value) in [("dashscope",dashscope),("sidecar",credentials.sidecar),("capability",credentials.capability)] { if !value.is_empty(){ credential(name)?.set_password(&value).map_err(|e|e.to_string())?; } }
   Ok(())
 }
 
