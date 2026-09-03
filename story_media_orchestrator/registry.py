@@ -22,6 +22,17 @@ class ArtifactRegistry:
             raise RuntimeError("artifact digest collision")
         return f"artifact://sha256/{digest}"
 
+    def put_bytes(self, payload: bytes) -> str:
+        if not isinstance(payload, bytes) or not payload:
+            raise ValueError("artifact payload must be non-empty bytes")
+        digest = hashlib.sha256(payload).hexdigest()
+        target = self.root / digest
+        if target.exists() and target.read_bytes() != payload:
+            raise RuntimeError("artifact digest collision")
+        if not target.exists():
+            target.write_bytes(payload)
+        return f"artifact://sha256/{digest}"
+
     def get_json(self, ref: str) -> dict[str, Any]:
         prefix = "artifact://sha256/"
         if not isinstance(ref, str) or not ref.startswith(prefix):
