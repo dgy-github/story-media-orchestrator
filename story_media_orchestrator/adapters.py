@@ -99,6 +99,7 @@ class StoryVideoAdapter:
         )
         result: dict[str, Any] = {"schema": pipeline["schema"], "pipeline": pipeline, "status": "planned"}
         if self.comfy is not None:
+            prompt = prompt or scene.get("action_prompt") or scene.get("description") or scene.get("summary")
             if not prompt:
                 raise ValueError("prompt is required for ComfyUI execution")
             from story_video_agent import build_minimax_h3_workflow

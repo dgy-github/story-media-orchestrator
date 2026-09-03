@@ -1,10 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, sync::Mutex, time::Duration};
+use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration, process::{Command, Stdio}};
 use tauri::State;
 use uuid::Uuid;
 
-#[derive(Default)] struct AppState { runs: Mutex<HashMap<String, MediaRun>> }
+#[derive(Clone, Default)] struct AppState { runs: Arc<Mutex<HashMap<String, MediaRun>>> }
 #[derive(Clone, Serialize, Deserialize)] struct Settings { story_model:String, image_model:String, image_size:String, video_model:String, comfyui_url:String, sidecar_url:String }
 #[derive(Clone, Serialize, Deserialize)] struct Credentials { dashscope:String, sidecar:String, capability:String }
 #[derive(Clone, Serialize, Deserialize)] struct Stage { name:String, state:String, artifact:Option<String>, retryable:bool }
@@ -22,7 +22,25 @@ fn credential(name:&str)->Result<keyring::Entry,String>{ keyring::Entry::new("st
 #[tauri::command] fn generate_sidecar_token()->String { Uuid::new_v4().to_string()+&Uuid::new_v4().to_string() }
 
 #[tauri::command] fn start_media_run(st:State<'_,AppState>, story_input:String)->Result<MediaRun,String>{
-  let _=story_input; let id=Uuid::new_v4().to_string(); let run=MediaRun{run_id:id.clone(),status:"running".into(),stages:vec![Stage{name:"故事生成".into(),state:"running".into(),artifact:None,retryable:true},Stage{name:"首帧/尾帧生图".into(),state:"queued".into(),artifact:None,retryable:true},Stage{name:"5 秒视频生成".into(),state:"queued".into(),artifact:None,retryable:true}]}; st.runs.lock().map_err(|_|"state lock poisoned".to_string())?.insert(id,run.clone()); Ok(run)
+  let id=Uuid::new_v4().to_string(); let run=MediaRun{run_id:id.clone(),status:"running".into(),stages:vec![Stage{name:"故事生成".into(),state:"running".into(),artifact:None,retryable:true},Stage{name:"首帧/尾帧生图".into(),state:"queued".into(),artifact:None,retryable:true},Stage{name:"5 秒视频生成".into(),state:"queued".into(),artifact:None,retryable:true}]}; st.runs.lock().map_err(|_|"state lock poisoned".to_string())?.insert(id.clone(),run.clone());
+  let runs=st.runs.clone(); let run_id=id.clone();
+  tauri::async_runtime::spawn(async move {
+    let result = tauri::async_runtime::spawn_blocking(move || {
+      let repo_root=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..\\..\\..");
+      let local=std::env::var("LOCALAPPDATA").unwrap_or_else(|_|".".into());
+      let settings_path=std::path::PathBuf::from(local).join("StoryMediaOrchestrator\\settings.json");
+      let settings:serde_json::Value=std::fs::read_to_string(settings_path).ok().and_then(|s|serde_json::from_str(&s).ok()).unwrap_or_default();
+      let mut command=Command::new("python"); command.current_dir(repo_root).args(["-m","story_media_orchestrator.cli"]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+      if let Some(url)=settings.get("sidecar_url").and_then(|v|v.as_str()){command.env("STORY_SIDECAR_URL",url);}
+      if let Ok(value)=credential("dashscope").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("DASHSCOPE_API_KEY",value);}
+      if let Ok(value)=credential("sidecar").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("STORY_SIDECAR_TOKEN",value);}
+      let mut child=command.spawn().map_err(|e|e.to_string())?;
+      use std::io::Write; child.stdin.take().ok_or("stdin unavailable".to_string())?.write_all(story_input.as_bytes()).map_err(|e|e.to_string())?;
+      let output=child.wait_with_output().map_err(|e|e.to_string())?; if output.status.success(){Ok(())}else{Err(String::from_utf8_lossy(&output.stderr).to_string())}
+    }).await;
+    if let Ok(mut map)=runs.lock() { if let Some(item)=map.get_mut(&run_id) { match result { Ok(Ok(()))=>{ for stage in &mut item.stages {stage.state="succeeded".into(); stage.artifact=Some(format!("artifact://real/{}",run_id));} item.status="succeeded".into(); }, _=>{item.status="failed".into(); if let Some(stage)=item.stages.iter_mut().find(|s|s.state=="running"){stage.state="failed".into();}} } } }
+  });
+  Ok(run)
 }
 
 #[tauri::command] fn get_media_run(st:State<'_,AppState>, run_id:String)->Result<MediaRun,String>{
