@@ -1,0 +1,11 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\string_cache-fbf0376c8f06ee32.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\atom.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\dynamic_set.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\static_sets.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\trivial_impls.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libstring_cache-fbf0376c8f06ee32.rlib: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\atom.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\dynamic_set.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\static_sets.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\trivial_impls.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libstring_cache-fbf0376c8f06ee32.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\atom.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\dynamic_set.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\static_sets.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\trivial_impls.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\atom.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\dynamic_set.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\static_sets.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\string_cache-0.9.0\src\trivial_impls.rs:

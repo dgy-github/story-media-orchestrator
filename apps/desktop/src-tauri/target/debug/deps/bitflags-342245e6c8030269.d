@@ -1,0 +1,12 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\bitflags-342245e6c8030269.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\iter.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\parser.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\traits.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\public.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\internal.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external\serde.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libbitflags-342245e6c8030269.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\iter.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\parser.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\traits.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\public.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\internal.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external\serde.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\iter.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\parser.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\traits.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\public.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\internal.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\bitflags-2.13.1\src\external\serde.rs:

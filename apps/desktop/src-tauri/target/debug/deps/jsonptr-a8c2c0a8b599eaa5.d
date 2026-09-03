@@ -1,0 +1,13 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\jsonptr-a8c2c0a8b599eaa5.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\assign.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\delete.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\resolve.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\pointer.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\token.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\index.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\component.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\../README.md
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libjsonptr-a8c2c0a8b599eaa5.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\assign.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\delete.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\resolve.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\pointer.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\token.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\index.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\component.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\../README.md
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\assign.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\delete.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\resolve.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\pointer.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\token.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\index.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\component.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\jsonptr-0.6.3\src\../README.md:

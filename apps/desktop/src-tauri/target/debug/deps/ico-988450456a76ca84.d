@@ -1,0 +1,12 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\ico-988450456a76ca84.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\macros.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\bmpdepth.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\icondir.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\image.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\restype.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libico-988450456a76ca84.rlib: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\macros.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\bmpdepth.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\icondir.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\image.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\restype.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libico-988450456a76ca84.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\macros.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\bmpdepth.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\icondir.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\image.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\restype.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\macros.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\bmpdepth.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\icondir.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\image.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\ico-0.5.0\src\restype.rs:

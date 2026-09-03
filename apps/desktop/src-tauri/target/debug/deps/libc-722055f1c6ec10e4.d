@@ -1,0 +1,13 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libc-722055f1c6ec10e4.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\macros.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\common\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\ucrt\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\primitives.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\msvc\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\types.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\liblibc-722055f1c6ec10e4.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\macros.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\common\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\ucrt\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\primitives.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\msvc\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\types.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\macros.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\common\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\new\ucrt\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\primitives.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\windows\msvc\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\libc-0.2.189\src\types.rs:

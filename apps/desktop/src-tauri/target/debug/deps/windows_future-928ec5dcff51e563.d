@@ -1,0 +1,10 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\windows_future-928ec5dcff51e563.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings_impl.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\get.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\waiter.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\../readme.md
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libwindows_future-928ec5dcff51e563.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings_impl.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\get.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\waiter.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\../readme.md
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\bindings_impl.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\get.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\waiter.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\windows-future-0.2.1\src\../readme.md:

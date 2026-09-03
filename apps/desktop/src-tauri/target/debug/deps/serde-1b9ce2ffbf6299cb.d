@@ -1,0 +1,14 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\serde-1b9ce2ffbf6299cb.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\integer128.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\de.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\ser.rs D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\build\serde-7c2762afaf98ded9\out/private.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libserde-1b9ce2ffbf6299cb.rlib: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\integer128.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\de.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\ser.rs D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\build\serde-7c2762afaf98ded9\out/private.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libserde-1b9ce2ffbf6299cb.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\integer128.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\mod.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\de.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\ser.rs D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\build\serde-7c2762afaf98ded9\out/private.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\integer128.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\mod.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\de.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\serde-1.0.229\src\private\ser.rs:
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\build\serde-7c2762afaf98ded9\out/private.rs:
+
+# env-dep:OUT_DIR=D:\\github_dgy\\story-media-orchestrator\\apps\\desktop\\src-tauri\\target\\debug\\build\\serde-7c2762afaf98ded9\\out

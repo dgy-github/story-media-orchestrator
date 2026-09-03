@@ -1,0 +1,10 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\zerovec_derive-f900d37296fe46de.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_ule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_varule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\ule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\utils.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\varule.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\zerovec_derive-f900d37296fe46de.dll: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_ule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_varule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\ule.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\utils.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\varule.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_ule.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\make_varule.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\ule.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\utils.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\zerovec-derive-0.11.6\src\varule.rs:

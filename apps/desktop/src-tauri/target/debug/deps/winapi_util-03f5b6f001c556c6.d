@@ -1,0 +1,11 @@
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\winapi_util-03f5b6f001c556c6.d: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\console.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\file.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\sysinfo.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\win.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libwinapi_util-03f5b6f001c556c6.rlib: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\console.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\file.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\sysinfo.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\win.rs
+
+D:\github_dgy\story-media-orchestrator\apps\desktop\src-tauri\target\debug\deps\libwinapi_util-03f5b6f001c556c6.rmeta: C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\lib.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\console.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\file.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\sysinfo.rs C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\win.rs
+
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\lib.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\console.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\file.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\sysinfo.rs:
+C:\Users\25376\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\winapi-util-0.1.11\src\win.rs:
