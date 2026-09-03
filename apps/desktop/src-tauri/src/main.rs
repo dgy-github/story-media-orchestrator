@@ -36,7 +36,10 @@ fn legacy_dashscope_key() -> Option<String> {
   let root=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..\\..\\..");
   let mut payload:serde_json::Value=serde_json::from_str(&input).map_err(|e|e.to_string())?;
   payload.as_object_mut().ok_or("stage input must be object".to_string())?.insert("_stage".into(),serde_json::Value::String(stage));
-  let mut child=Command::new("python").current_dir(root).args(["-m","story_media_orchestrator.cli"]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().map_err(|e|e.to_string())?;
+  let mut command=Command::new("python").current_dir(root).args(["-m","story_media_orchestrator.cli"]).env("STORY_SIDECAR_URL","http://127.0.0.1:8765").stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+  if let Ok(value)=credential("dashscope").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("DASHSCOPE_API_KEY",value);}
+  if let Ok(value)=credential("sidecar").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("STORY_SIDECAR_TOKEN",value);}
+  let mut child=command.spawn().map_err(|e|e.to_string())?;
   use std::io::Write; child.stdin.take().ok_or("stdin unavailable".to_string())?.write_all(&serde_json::to_vec(&payload).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
   let output=child.wait_with_output().map_err(|e|e.to_string())?;
   if !output.status.success(){return Err(String::from_utf8_lossy(&output.stderr).to_string());}
