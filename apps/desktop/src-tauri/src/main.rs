@@ -23,7 +23,10 @@ fn legacy_dashscope_key() -> Option<String> {
   let path=std::env::var("LOCALAPPDATA").unwrap_or_else(|_|".".into()); let dir=std::path::PathBuf::from(path).join("StoryMediaOrchestrator"); std::fs::create_dir_all(&dir).map_err(|e|e.to_string())?;
   std::fs::write(dir.join("settings.json"), serde_json::to_vec_pretty(&settings).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
   let dashscope = if credentials.dashscope.is_empty() { legacy_dashscope_key().unwrap_or_default() } else { credentials.dashscope };
-  for (name,value) in [("dashscope",dashscope),("sidecar",credentials.sidecar),("capability",credentials.capability)] { if !value.is_empty(){ credential(name)?.set_password(&value).map_err(|e|e.to_string())?; } }
+  let generated = Uuid::new_v4().to_string()+&Uuid::new_v4().to_string();
+  let sidecar = if credentials.sidecar.is_empty() { generated.clone() } else { credentials.sidecar };
+  let capability = if credentials.capability.is_empty() { generated } else { credentials.capability };
+  for (name,value) in [("dashscope",dashscope),("sidecar",sidecar),("capability",capability)] { if !value.is_empty(){ credential(name)?.set_password(&value).map_err(|e|e.to_string())?; } }
   Ok(())
 }
 
@@ -42,6 +45,7 @@ fn legacy_dashscope_key() -> Option<String> {
       if let Some(url)=settings.get("sidecar_url").and_then(|v|v.as_str()){command.env("STORY_SIDECAR_URL",url);}
       if let Ok(value)=credential("dashscope").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("DASHSCOPE_API_KEY",value);}
       if let Ok(value)=credential("sidecar").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("STORY_SIDECAR_TOKEN",value);}
+      if let Ok(value)=credential("capability").and_then(|e|e.get_password().map_err(|e|e.to_string())){command.env("MICROCODEX_CAPABILITY_TOKEN",value);}
       let mut child=command.spawn().map_err(|e|e.to_string())?;
       use std::io::Write; child.stdin.take().ok_or("stdin unavailable".to_string())?.write_all(story_input.as_bytes()).map_err(|e|e.to_string())?;
       let output=child.wait_with_output().map_err(|e|e.to_string())?; if output.status.success(){Ok(())}else{Err(String::from_utf8_lossy(&output.stderr).to_string())}
