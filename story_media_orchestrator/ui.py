@@ -7,6 +7,7 @@ import json
 import threading
 import os
 import subprocess
+import secrets
 from pathlib import Path
 from typing import Any, Callable
 from urllib import request as url_request
@@ -26,8 +27,19 @@ DEFAULTS = {
     "STORY_SIDECAR_URL": "http://127.0.0.1:8765",
 }
 
+INTERNAL_PATH_KEYS = ("STORY_CAMPAIGN_ROOT", "STORY_IMAGE_AGENT_ROOT", "STORY_VIDEO_AGENT_ROOT")
+
+
+def apply_internal_defaults(config: dict[str, str]) -> dict[str, str]:
+    """Return config with sibling agent paths filled from the bundled workspace."""
+    result = dict(config)
+    for key in INTERNAL_PATH_KEYS:
+        result[key] = result.get(key) or DEFAULTS[key]
+    return result
+
 
 def validate_ui_config(config: dict[str, str]) -> list[str]:
+    config = apply_internal_defaults(config)
     errors = []
     for key in ("STORY_CAMPAIGN_ROOT", "STORY_IMAGE_AGENT_ROOT", "STORY_VIDEO_AGENT_ROOT"):
         if not config.get(key) or not Path(config[key]).is_dir():
@@ -49,9 +61,6 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
     root.title("Story Media Orchestrator")
     root.geometry("760x520")
     fields = {
-        "Story agent path": "STORY_CAMPAIGN_ROOT",
-        "Image agent path": "STORY_IMAGE_AGENT_ROOT",
-        "Video agent path": "STORY_VIDEO_AGENT_ROOT",
         "Story model": "STORY_MODEL",
         "Image model": "STORY_IMAGE_MODEL",
         "Image size": "STORY_IMAGE_SIZE",
@@ -59,6 +68,7 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         "Video turbo": "STORY_VIDEO_TURBO",
         "Video steps": "STORY_VIDEO_STEPS",
         "ComfyUI URL": "MINIMAX_H3_COMFYUI_BASE_URL",
+        "DashScope API key": "DASHSCOPE_API_KEY",
         "Sidecar URL": "STORY_SIDECAR_URL",
         "Sidecar token": "STORY_SIDECAR_TOKEN",
         "Capability URL": "MICROCODEX_CAPABILITY_URL",
@@ -68,7 +78,7 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
     form = ttk.Frame(root, padding=16); form.pack(fill="x")
     for row, (label, key) in enumerate(fields.items()):
         ttk.Label(form, text=label, width=20).grid(row=row, column=0, sticky="w", pady=4)
-        entry = ttk.Entry(form, width=70, show="•" if "token" in label.lower() else "")
+        entry = ttk.Entry(form, width=70, show="•" if any(word in label.lower() for word in ("token", "api key")) else "")
         entry.grid(row=row, column=1, sticky="ew", pady=4)
         values[key] = entry
         if key.endswith("_ROOT"):
@@ -81,7 +91,7 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         status.configure(state="normal"); status.insert("end", message + "\n"); status.see("end"); status.configure(state="disabled")
 
     def execute() -> None:
-        config = {key: entry.get().strip() for key, entry in values.items()}
+        config = apply_internal_defaults({key: entry.get().strip() for key, entry in values.items()})
         errors = validate_ui_config(config)
         if errors:
             write("[config-error] " + "；".join(errors)); return
@@ -92,6 +102,9 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
             return
         def worker() -> None:
             try:
+                for key, value in config.items():
+                    if value:
+                        os.environ[key] = value
                 story_input = json.loads(open(story_path, encoding="utf-8").read())
                 if orchestrator is not None:
                     result = orchestrator.run(story_input=story_input)
@@ -107,11 +120,12 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
 
     config_path = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StoryMediaOrchestrator" / "config.json"
     def save_config() -> None:
-        config = {key: entry.get().strip() for key, entry in values.items()}
+        config = apply_internal_defaults({key: entry.get().strip() for key, entry in values.items()})
         errors = validate_ui_config(config)
         if errors:
             write("[config-error] " + "；".join(errors)); return
         config_path.parent.mkdir(parents=True, exist_ok=True)
+        # Paths are persisted for runtime compatibility but are intentionally not shown as editable fields.
         config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
         write(f"[saved] 配置已保存：{config_path}")
 
@@ -124,17 +138,27 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
             entry.delete(0, "end"); entry.insert(0, data.get(key, ""))
         write("[loaded] 已加载本地配置")
 
+    def generate_sidecar_token() -> None:
+        token = secrets.token_urlsafe(32)
+        entry = values["STORY_SIDECAR_TOKEN"]
+        entry.delete(0, "end"); entry.insert(0, token)
+        write("[generated] 已生成新的 sidecar token（仅保存在本机配置）")
+
     def start_stack() -> None:
+        config = apply_internal_defaults({key: entry.get().strip() for key, entry in values.items()})
+        errors = validate_ui_config(config)
+        if errors:
+            write("[config-error] " + "；".join(errors)); return
         save_config()
-        for key, entry in values.items():
-            if entry.get().strip(): os.environ[key] = entry.get().strip()
+        for key, value in config.items():
+            if value: os.environ[key] = value
         script = Path(__file__).resolve().parents[1] / "scripts" / "start-local-stack.ps1"
         subprocess.Popen(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
                          cwd=str(script.parent.parent), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         write("[started] 正在启动本地 sidecar，请查看 sidecar.log")
 
     def test_connections() -> None:
-        config = {key: entry.get().strip() for key, entry in values.items()}
+        config = apply_internal_defaults({key: entry.get().strip() for key, entry in values.items()})
         errors = validate_ui_config(config)
         if errors:
             write("[config-error] " + "；".join(errors)); return
@@ -154,9 +178,12 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
     buttons = ttk.Frame(root); buttons.pack(pady=4)
     ttk.Button(buttons, text="保存配置", command=save_config).pack(side="left", padx=4)
     ttk.Button(buttons, text="加载配置", command=load_config).pack(side="left", padx=4)
+    ttk.Button(buttons, text="生成 sidecar token", command=generate_sidecar_token).pack(side="left", padx=4)
     ttk.Button(buttons, text="启动本地栈", command=start_stack).pack(side="left", padx=4)
     ttk.Button(buttons, text="测试连接", command=test_connections).pack(side="left", padx=4)
     for key, default in DEFAULTS.items():
+        if key not in values:
+            continue
         values[key].insert(0, default)
     load_config()
     root.mainloop()
