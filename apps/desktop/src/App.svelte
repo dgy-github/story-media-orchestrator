@@ -11,9 +11,10 @@
   let videoPrompt = "动漫女孩在黄昏街道转身离开，动作完整，保持角色身份、服装、镜头和光线连续";
   let videoSteps = 20;
   let videoTurbo = false;
-  async function generateStory() { storyInput = JSON.stringify({ title: storyText.slice(0, 20), scenes: [{ summary: storyText, source_spans: ["scene-1"] }] }, null, 2); await startPipeline("故事"); }
-  async function generateImage() { await startPipeline("图片"); }
-  async function generateVideo() { await startPipeline("视频"); }
+  let stageOutput = "";
+  async function generateStory() { try { const result = await invoke("run_media_stage", { stage: "story", input: JSON.stringify({ title: storyText, scenes: [{ summary: storyText, source_spans: ["scene-1"] }] }) }); storyInput = JSON.stringify(result, null, 2); stageOutput = storyInput; status = "故事已生成"; tab = "home"; } catch (e) { status = `故事失败: ${e}`; } }
+  async function generateImage() { try { const story = JSON.parse(storyInput); const result = await invoke("run_media_stage", { stage: "image", input: JSON.stringify({ scene: story.scenes?.[0], source_spans: story.scenes?.[0]?.source_spans ?? ["scene-1"] }) }); stageOutput = JSON.stringify(result, null, 2); status = "图片已生成"; tab = "home"; } catch (e) { status = `图片失败: ${e}`; } }
+  async function generateVideo() { try { const result = await invoke("run_media_stage", { stage: "video", input: JSON.stringify({ first_frame_ref: "artifact://输入首帧", last_frame_ref: "artifact://输入尾帧", source_spans: ["scene-1"], scene: { summary: videoPrompt }, prompt: videoPrompt }) }); stageOutput = JSON.stringify(result, null, 2); status = "视频已生成"; tab = "home"; } catch (e) { status = `视频失败: ${e}`; } }
   async function startPipeline(stage = "全流程") { try { JSON.parse(storyInput); } catch { status = "故事 JSON 格式错误"; tab = "story"; return; } status = `${stage}阶段已提交`; tab = "home"; run = await invoke("start_media_run", { storyInput }); poll(); }
   async function poll() { if (!run) return; run = await invoke("get_media_run", { runId: run.run_id }); if (!["succeeded", "failed"].includes(run.status)) setTimeout(poll, 700); }
   function stageState(index: number) { return run?.stages?.[index]?.state ?? "待开始"; }
@@ -24,7 +25,7 @@
   {#if tab === "home"}
     <section class="card hero"><div><h2>自动化流水线</h2><p class="muted">从一个故事输入开始，按顺序生成故事包、首帧/尾帧图片和 5 秒视频。</p></div><button class="primary large" on:click={startPipeline}>开始全流程</button></section>
     <section class="flow"><div class:done={stageState(0) === "succeeded"} class:active={stageState(0) === "running"} class="flowstage" on:click={() => tab = "story"}><span>01</span><h3>生成故事</h3><strong>{stageState(0)}</strong><small>输入故事梗概，输出 story-package</small></div><i>→</i><div class:done={stageState(1) === "succeeded"} class:active={stageState(1) === "running"} class="flowstage" on:click={() => tab = "image"}><span>02</span><h3>生成图</h3><strong>{stageState(1)}</strong><small>首帧 / 尾帧与角色连续性</small></div><i>→</i><div class:done={stageState(2) === "succeeded"} class:active={stageState(2) === "running"} class="flowstage" on:click={() => tab = "video"}><span>03</span><h3>生成视频</h3><strong>{stageState(2)}</strong><small>MiniMax H3 · 5 秒动作单元</small></div></section>
-    {#if run}<section class="card output"><h2>本次运行</h2><pre>{JSON.stringify(run, null, 2)}</pre></section>{:else}<section class="card mutedbox"><p>尚未开始运行。你可以先分别编辑三个阶段，也可以直接点击“开始全流程”。</p></section>{/if}
+    {#if run}<section class="card output"><h2>本次运行</h2><pre>{JSON.stringify(run, null, 2)}</pre></section>{:else if stageOutput}<section class="card output"><h2>阶段输出</h2><pre>{stageOutput}</pre></section>{:else}<section class="card mutedbox"><p>尚未开始运行。你可以先分别编辑三个阶段，也可以直接点击“开始全流程”。</p></section>{/if}
   {:else if tab === "story"}
     <section class="card workspace"><h2>生成故事</h2><p class="muted">输入故事梗概，生成可供后续生图和生视频使用的结构化故事包。</p><label>故事梗概<textarea bind:value={storyText}></textarea></label><div class="actions"><button class="primary" on:click={generateStory}>生成故事包</button><button on:click={() => tab = "home"}>返回流水线</button></div><label>story-package/v1 输出<textarea class="tall" bind:value={storyInput} spellcheck="false"></textarea></label></section>
   {:else if tab === "image"}

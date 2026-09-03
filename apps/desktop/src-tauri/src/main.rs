@@ -32,6 +32,17 @@ fn legacy_dashscope_key() -> Option<String> {
 
 #[tauri::command] fn generate_sidecar_token()->String { Uuid::new_v4().to_string()+&Uuid::new_v4().to_string() }
 
+#[tauri::command] fn run_media_stage(stage:String, input:String)->Result<serde_json::Value,String>{
+  let root=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..\\..\\..");
+  let mut payload:serde_json::Value=serde_json::from_str(&input).map_err(|e|e.to_string())?;
+  payload.as_object_mut().ok_or("stage input must be object".to_string())?.insert("_stage".into(),serde_json::Value::String(stage));
+  let mut child=Command::new("python").current_dir(root).args(["-m","story_media_orchestrator.cli"]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().map_err(|e|e.to_string())?;
+  use std::io::Write; child.stdin.take().ok_or("stdin unavailable".to_string())?.write_all(&serde_json::to_vec(&payload).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
+  let output=child.wait_with_output().map_err(|e|e.to_string())?;
+  if !output.status.success(){return Err(String::from_utf8_lossy(&output.stderr).to_string());}
+  serde_json::from_slice(&output.stdout).map_err(|e|e.to_string())
+}
+
 #[tauri::command] fn start_media_run(st:State<'_,AppState>, story_input:String)->Result<MediaRun,String>{
   let id=Uuid::new_v4().to_string(); let run=MediaRun{run_id:id.clone(),status:"running".into(),stages:vec![Stage{name:"故事生成".into(),state:"running".into(),artifact:None,retryable:true},Stage{name:"首帧/尾帧生图".into(),state:"queued".into(),artifact:None,retryable:true},Stage{name:"5 秒视频生成".into(),state:"queued".into(),artifact:None,retryable:true}]}; st.runs.lock().map_err(|_|"state lock poisoned".to_string())?.insert(id.clone(),run.clone());
   let runs=st.runs.clone(); let run_id=id.clone();
@@ -61,4 +72,4 @@ fn legacy_dashscope_key() -> Option<String> {
   std::thread::sleep(Duration::from_millis(20)); Ok(run.clone())
 }
 
-fn main(){ tauri::Builder::default().manage(AppState::default()).invoke_handler(tauri::generate_handler![save_settings,generate_sidecar_token,start_media_run,get_media_run]).run(tauri::generate_context!()).expect("error while running tauri application"); }
+fn main(){ tauri::Builder::default().manage(AppState::default()).invoke_handler(tauri::generate_handler![save_settings,generate_sidecar_token,run_media_stage,start_media_run,get_media_run]).run(tauri::generate_context!()).expect("error while running tauri application"); }
