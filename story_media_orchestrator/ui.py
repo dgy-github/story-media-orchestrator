@@ -13,12 +13,17 @@ from urllib import request as url_request
 
 
 DEFAULTS = {
+    "STORY_CAMPAIGN_ROOT": r"D:\github_dgy\microcodex-short-drama-studio",
+    "STORY_IMAGE_AGENT_ROOT": r"D:\github_dgy\story-image-agent",
+    "STORY_VIDEO_AGENT_ROOT": r"D:\github_dgy\story-video-agent",
     "STORY_MODEL": "configured-by-story-runtime",
     "STORY_IMAGE_MODEL": "wan2.2-t2i-flash",
     "STORY_IMAGE_SIZE": "720*1280",
     "STORY_VIDEO_MODEL": "minimax_h3_fl2va",
     "STORY_VIDEO_TURBO": "false",
     "STORY_VIDEO_STEPS": "20",
+    "MINIMAX_H3_COMFYUI_BASE_URL": "http://61.157.218.59:31340",
+    "STORY_SIDECAR_URL": "http://127.0.0.1:8765",
 }
 
 
