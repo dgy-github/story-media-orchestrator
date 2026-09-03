@@ -5,6 +5,7 @@ from pathlib import Path
 from .runtime import build_runtime_from_environment
 from .adapters import HttpStoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
 from .registry import ArtifactRegistry
+from .quality import evaluate_artifact
 
 def main() -> int:
     payload = json.loads(sys.stdin.read() or "{}")
@@ -29,6 +30,8 @@ def main() -> int:
             import story_video_agent as pkg
             result = StoryVideoAdapter(pkg.VideoPromptWorkflow("story-media-orchestrator"), comfy=pkg.ComfyUIAdapter.from_environment(), registry=registry).run(first_frame_ref=payload["first_frame_ref"], last_frame_ref=payload.get("last_frame_ref"), story_spans=payload.get("source_spans", []), scene=payload.get("scene", {}), prompt=payload.get("prompt"))
         else: raise ValueError(f"unknown stage: {stage}")
+    if isinstance(result, dict):
+        result["quality_evaluation"] = evaluate_artifact(result, stage)
     print(json.dumps(result, ensure_ascii=False), flush=True)
     return 0
 
