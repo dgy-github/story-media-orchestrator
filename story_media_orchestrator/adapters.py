@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import base64
 import inspect
+import json
+import time
+from urllib import request as http_request, error as http_error
 from typing import Any, Callable
 
 from .registry import ArtifactRegistry
@@ -22,6 +25,42 @@ class StoryCampaignAdapter:
         if not isinstance(result, dict) or result.get("schema") != "story-package/v1":
             raise ValueError("story campaign did not return story-package/v1")
         return result
+
+
+class HttpStoryCampaignAdapter(StoryCampaignAdapter):
+    """Call the main project's authenticated sidecar over its HTTP contract."""
+    def __init__(self, base_url: str, token: str, *, timeout: float = 10.0,
+                 poll_interval: float = 2.0, max_polls: int = 300) -> None:
+        if not base_url.startswith(("http://", "https://")) or len(token) < 32:
+            raise ValueError("invalid story sidecar configuration")
+        self.base_url, self.token = base_url.rstrip("/"), token
+        self.timeout, self.poll_interval, self.max_polls = timeout, poll_interval, max_polls
+
+    def run(self, story_input: dict[str, Any], **kwargs) -> dict[str, Any]:
+        body = json.dumps(story_input, ensure_ascii=False).encode()
+        req = http_request.Request(self.base_url + "/v1/runs", body,
+                                   {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json",
+                                    "Idempotency-Key": kwargs.get("idempotency_key", "story-media-orchestrator")})
+        with http_request.urlopen(req, timeout=self.timeout) as response:
+            acceptance = json.loads(response.read())
+        run_id = acceptance.get("run_id")
+        if not isinstance(run_id, str) or not run_id:
+            raise RuntimeError("story sidecar acceptance missing run_id")
+        for _ in range(self.max_polls):
+            req = http_request.Request(self.base_url + f"/v1/runs/{run_id}/result",
+                                       headers={"Authorization": f"Bearer {self.token}"})
+            try:
+                with http_request.urlopen(req, timeout=self.timeout) as response:
+                    if response.status == 200:
+                        result = json.loads(response.read())
+                        package = result.get("package") if isinstance(result, dict) else None
+                        if isinstance(package, dict) and package.get("schema") == "story-package/v1":
+                            return package
+            except http_error.HTTPError as exc:
+                if exc.code not in {404, 409, 410, 425}:
+                    raise
+            time.sleep(self.poll_interval)
+        raise TimeoutError("story sidecar polling timed out")
 
 
 class StoryImageAdapter:

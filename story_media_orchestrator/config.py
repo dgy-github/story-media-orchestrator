@@ -22,6 +22,8 @@ class OrchestratorConfig:
     artifact_root: Path
     comfyui_base_url: str | None
     comfyui_token: str | None
+    story_sidecar_url: str | None
+    story_sidecar_token: str | None
     models: ModelConfig
 
     @classmethod
@@ -47,4 +49,5 @@ class OrchestratorConfig:
         )
         return cls(image, video, Path(os.environ.get("STORY_MEDIA_ARTIFACT_ROOT", ".artifacts")).resolve(),
                    os.environ.get("MINIMAX_H3_COMFYUI_BASE_URL"),
-                   os.environ.get("MINIMAX_H3_COMFYUI_TOKEN"), models)
+                   os.environ.get("MINIMAX_H3_COMFYUI_TOKEN"),
+                   os.environ.get("STORY_SIDECAR_URL"), os.environ.get("STORY_SIDECAR_TOKEN"), models)

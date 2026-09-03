@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-from .adapters import StoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
+from .adapters import HttpStoryCampaignAdapter, StoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
 from .pipeline import SingleSceneOrchestrator
 from .registry import ArtifactRegistry
 from .config import OrchestratorConfig
@@ -63,10 +63,14 @@ def build_runtime(*, story_runner: Callable[..., dict[str, Any]], config: Runtim
     )
 
 
-def build_runtime_from_environment(*, story_runner: Callable[..., dict[str, Any]],
+def build_runtime_from_environment(*, story_runner: Callable[..., dict[str, Any]] | None = None,
                                    image_provider: Any | None = None,
                                    video_client: Any | None = None) -> SingleSceneOrchestrator:
     cfg = OrchestratorConfig.from_environment()
+    if story_runner is None:
+        if not cfg.story_sidecar_url or not cfg.story_sidecar_token:
+            raise RuntimeError("provide story_runner or STORY_SIDECAR_URL/STORY_SIDECAR_TOKEN")
+        story_runner = HttpStoryCampaignAdapter(cfg.story_sidecar_url, cfg.story_sidecar_token).run
     return build_runtime(story_runner=story_runner,
                          config=RuntimeConfig(cfg.image_root, cfg.video_root, cfg.artifact_root),
                          image_provider=image_provider, video_client=video_client)
