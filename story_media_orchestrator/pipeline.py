@@ -52,6 +52,8 @@ class SingleSceneOrchestrator:
             image_plan = self.image_agent(plan=image_plan, quality=image_quality)
             _require_schema(image_plan, "image-production-plan/v1", "final image output")
         refs = image_plan.get("final_artifacts") or image_plan.get("artifacts")
+        if refs is None and isinstance(image_plan.get("first_frame_ref"), str):
+            refs = [image_plan["first_frame_ref"], image_plan.get("last_frame_ref", image_plan["first_frame_ref"])]
         if not isinstance(refs, list) or len(refs) < 2 or not all(isinstance(r, str) for r in refs[:2]):
             raise OrchestrationError("image plan must provide first and last frame artifacts")
 
