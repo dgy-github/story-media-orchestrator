@@ -1,3 +1,4 @@
 import App from "./App.svelte";
 import "./app.css";
-new App({ target: document.getElementById("app")! });
+import { mount } from "svelte";
+mount(App, { target: document.getElementById("app")! });
