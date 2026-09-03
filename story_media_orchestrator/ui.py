@@ -5,6 +5,9 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 import json
 import threading
+import os
+import subprocess
+from pathlib import Path
 from typing import Any, Callable
 
 
@@ -20,12 +23,16 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         "Image model": "STORY_IMAGE_MODEL",
         "Video model": "STORY_VIDEO_MODEL",
         "ComfyUI URL": "MINIMAX_H3_COMFYUI_BASE_URL",
+        "Sidecar URL": "STORY_SIDECAR_URL",
+        "Sidecar token": "STORY_SIDECAR_TOKEN",
+        "Capability URL": "MICROCODEX_CAPABILITY_URL",
+        "Capability token": "MICROCODEX_CAPABILITY_TOKEN",
     }
     values: dict[str, tk.Entry] = {}
     form = ttk.Frame(root, padding=16); form.pack(fill="x")
     for row, (label, key) in enumerate(fields.items()):
         ttk.Label(form, text=label, width=20).grid(row=row, column=0, sticky="w", pady=4)
-        entry = ttk.Entry(form, width=70)
+        entry = ttk.Entry(form, width=70, show="•" if "token" in label.lower() else "")
         entry.grid(row=row, column=1, sticky="ew", pady=4)
         values[key] = entry
     form.columnconfigure(1, weight=1)
@@ -56,4 +63,34 @@ def launch(run: Callable[[dict[str, str]], str] | None = None, orchestrator: Any
         threading.Thread(target=worker, daemon=True).start()
 
     ttk.Button(root, text="Run single-scene preview", command=execute).pack(pady=8)
+
+    config_path = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "StoryMediaOrchestrator" / "config.json"
+    def save_config() -> None:
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(json.dumps({key: entry.get() for key, entry in values.items()}, ensure_ascii=False, indent=2), encoding="utf-8")
+        write(f"[saved] 配置已保存：{config_path}")
+
+    def load_config() -> None:
+        if not config_path.is_file():
+            write("[info] 尚无已保存配置")
+            return
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+        for key, entry in values.items():
+            entry.delete(0, "end"); entry.insert(0, data.get(key, ""))
+        write("[loaded] 已加载本地配置")
+
+    def start_stack() -> None:
+        save_config()
+        for key, entry in values.items():
+            if entry.get().strip(): os.environ[key] = entry.get().strip()
+        script = Path(__file__).resolve().parents[1] / "scripts" / "start-local-stack.ps1"
+        subprocess.Popen(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+                         cwd=str(script.parent.parent), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        write("[started] 正在启动本地 sidecar，请查看 sidecar.log")
+
+    buttons = ttk.Frame(root); buttons.pack(pady=4)
+    ttk.Button(buttons, text="保存配置", command=save_config).pack(side="left", padx=4)
+    ttk.Button(buttons, text="加载配置", command=load_config).pack(side="left", padx=4)
+    ttk.Button(buttons, text="启动本地栈", command=start_stack).pack(side="left", padx=4)
+    load_config()
     root.mainloop()
