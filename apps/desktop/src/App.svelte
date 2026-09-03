@@ -21,7 +21,7 @@
   async function poll() { if (!run) return; run = await invoke("get_media_run", { runId: run.run_id }); if (!["succeeded", "failed"].includes(run.status)) setTimeout(poll, 700); }
   function stageState(index: number) { return run?.stages?.[index]?.state ?? "待开始"; }
 </script>
-<main>
+<div class="shell"><aside class="sidebar"><div class="brand"><span class="brandmark">M</span><div><strong>Story Media</strong><small>ORCHESTRATOR</small></div></div><nav><button class:active={tab === "home"} on:click={() => tab = "home"}>⌂ 首页流水线</button><button class:active={tab === "story"} on:click={() => tab = "story"}>▣ 生成故事</button><button class:active={tab === "image"} on:click={() => tab = "image"}>◈ 生成图片</button><button class:active={tab === "video"} on:click={() => tab = "video"}>▶ 生成视频</button></nav><div class="sidebar-note"><strong>执行引擎</strong><small>Rust trusted runtime</small><small>模型无关 · 可控返工</small></div></aside><main>
   <header><div><h1>Story Media Orchestrator</h1><p>统一创作工作台 · 故事 → 图片 → 视频</p></div><span class="badge">{status}</span></header>
   <nav><button class:active={tab === "home"} on:click={() => tab = "home"}>首页流水线</button><button class:active={tab === "story"} on:click={() => tab = "story"}>生成故事</button><button class:active={tab === "image"} on:click={() => tab = "image"}>生成图片</button><button class:active={tab === "video"} on:click={() => tab = "video"}>生成视频</button></nav>
   {#if tab === "home"}
@@ -35,4 +35,4 @@
   {:else}
     <section class="card workspace"><h2>生成视频</h2><p class="muted">使用首帧/尾帧和动作约束生成单条 5 秒视频。</p><label>视频动作提示词<textarea bind:value={videoPrompt}></textarea></label><div class="row"><label>Steps<input type="number" min="1" max="100" bind:value={videoSteps}></label><label class="check"><input type="checkbox" bind:checked={videoTurbo}> Turbo 模式</label></div><div class="actions"><button class="primary" disabled={!imageReady} on:click={generateVideo}>生成 5 秒视频</button><button on:click={() => tab = "home"}>返回流水线</button></div>{#if !imageReady}<p class="gate">🔒 请先完成“生成故事” → “生成图”</p>{/if}<div class="artifact empty">生成后将在这里显示视频 artifact、任务轮询、质量检测和重试按钮。</div></section>
   {/if}
-</main>
+</main></div>
