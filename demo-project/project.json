@@ -1,0 +1,27 @@
+{
+  "project_id": "demo-project",
+  "story": "A courier arrives. The city wakes.",
+  "mode": "preview",
+  "status": "done",
+  "shots": [
+    {
+      "id": "shot-01",
+      "text": "A courier arrives",
+      "status": "done",
+      "assets": {},
+      "error": null,
+      "subtitle": null,
+      "duration": 3.0
+    },
+    {
+      "id": "shot-02",
+      "text": "The city wakes",
+      "status": "done",
+      "assets": {},
+      "error": null,
+      "subtitle": null,
+      "duration": 3.0
+    }
+  ],
+  "output": "demo-project\\preview.txt"
+}

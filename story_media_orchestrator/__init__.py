@@ -6,9 +6,14 @@ from .adapters import StoryCampaignAdapter, HttpStoryCampaignAdapter, StoryImage
 from .runtime import RuntimeConfig, build_runtime, build_runtime_from_environment
 from .config import ModelConfig, OrchestratorConfig
 from .ui import launch
+from .manifest import ProjectManifest, Shot
+from .preview import render_preview
+from .tts import TTSProvider, FakeTTSProvider
 
 __all__ = ["SingleSceneOrchestrator", "OrchestrationError", "ArtifactRegistry",
            "StoryCampaignAdapter", "HttpStoryCampaignAdapter", "StoryImageAdapter", "StoryVideoAdapter"]
 __all__.extend(["RuntimeConfig", "build_runtime", "build_runtime_from_environment",
                 "ModelConfig", "OrchestratorConfig"])
 __all__.append("launch")
+__all__.extend(["ProjectManifest", "Shot", "render_preview"])
+__all__.extend(["TTSProvider", "FakeTTSProvider"])

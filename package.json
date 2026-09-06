@@ -1,0 +1,10 @@
+{
+  "name": "story-media-orchestrator",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix apps/desktop run build",
+    "dev": "npm --prefix apps/desktop run dev",
+    "tauri": "npm --prefix apps/desktop run tauri",
+    "tauri:dev": "npm --prefix apps/desktop run tauri:dev"
+  }
+}
