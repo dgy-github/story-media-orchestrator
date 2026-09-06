@@ -11,6 +11,9 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     audio = root / "audio"; audio.mkdir(exist_ok=True)
     tts = tts or FakeTTSProvider()
     for i, shot in enumerate(manifest.shots, 1):
+        if shot.status == "done" and shot.assets.get("audio") and Path(shot.assets["audio"]).exists():
+            continue
+        shot.attempts += 1
         shot.status = "generated"
         image = shot.assets.get("image")
         if image and Path(image).exists():
@@ -18,7 +21,8 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
         else:
             frame_path = frames / f"{i:04d}.txt"
             frame_path.write_text(shot.text, encoding="utf-8")
-        tts.synthesize(shot.text, audio / f"{i:04d}.wav")
+        audio_path = tts.synthesize(shot.text, audio / f"{i:04d}.wav")
+        shot.assets["audio"] = str(audio_path)
     ffmpeg = shutil.which("ffmpeg")
     subtitle_file = root / "subtitles.srt"
     clock = 0.0; subtitle_lines = []
@@ -41,5 +45,6 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
         output = root / "preview.txt"
         output.write_text("\n".join(shot.text for shot in manifest.shots), encoding="utf-8")
     manifest.output = str(output); manifest.status = "done"
+    manifest.timeline = [{"shot_id": shot.id, "start": sum(s.duration for s in manifest.shots[:i]), "duration": shot.duration, "transition": "cut"} for i, shot in enumerate(manifest.shots)]
     for shot in manifest.shots: shot.status = "done"
     return output

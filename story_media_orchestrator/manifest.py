@@ -16,6 +16,11 @@ class Shot:
     error: str | None = None
     subtitle: str | None = None
     duration: float = 3.0
+    scene_id: str = "scene-01"
+    review: str = "pending"
+    attempts: int = 0
+    cache_key: str | None = None
+    mode: str = "preview"
 
 @dataclass
 class ProjectManifest:
@@ -25,6 +30,8 @@ class ProjectManifest:
     status: str = "planned"
     shots: list[Shot] = field(default_factory=list)
     output: str | None = None
+    review_required: bool = True
+    timeline: list[dict[str, Any]] = field(default_factory=list)
 
     def save(self, path: str | Path) -> None:
         target = Path(path); target.parent.mkdir(parents=True, exist_ok=True)
@@ -38,8 +45,10 @@ class ProjectManifest:
 
     @classmethod
     def create(cls, project_id: str, story: str) -> "ProjectManifest":
-        chunks = [part.strip() for part in story.replace("。", ".").split(".") if part.strip()]
-        return cls(project_id, story, shots=[Shot(f"shot-{i:02d}", text) for i, text in enumerate(chunks or [story], 1)])
+        import re
+        chunks = [part.strip() for part in re.split(r"[。！？.!?\n]+", story) if part.strip()]
+        shots = [Shot(f"shot-{i:02d}", text, scene_id=f"scene-{(i-1)//3+1:02d}") for i, text in enumerate(chunks or [story], 1)]
+        return cls(project_id, story, shots=shots)
 
     def shot(self, shot_id: str) -> Shot:
         for shot in self.shots:
