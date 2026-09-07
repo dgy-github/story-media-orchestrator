@@ -32,6 +32,20 @@ fn legacy_dashscope_key() -> Option<String> {
 
 #[tauri::command] fn generate_sidecar_token()->String { Uuid::new_v4().to_string()+&Uuid::new_v4().to_string() }
 
+#[tauri::command] fn project_workflow(command:String, project:String, story:Option<String>, shot:Option<String>, mode:Option<String>)->Result<serde_json::Value,String>{
+  if !["create","run","resume","retry","review"].contains(&command.as_str()){return Err("unsupported project command".into());}
+  let root=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..\\..\\..");
+  let project_path=std::path::PathBuf::from(&project);
+  let mut args=vec!["-m".to_string(),"story_media_orchestrator.cli".to_string(),command.clone(),project.clone()];
+  if command=="create" { args.push(story.ok_or("story is required".to_string())?); }
+  if ["retry","review"].contains(&command.as_str()) { args.push(shot.ok_or("shot id is required".to_string())?); }
+  if ["run","resume"].contains(&command.as_str()) { if let Some(value)=mode { args.extend(["--mode".to_string(),value]); } }
+  let output=Command::new("python").current_dir(root).args(args).output().map_err(|e|e.to_string())?;
+  if !output.status.success(){return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());}
+  let manifest=project_path.join("project.json");
+  serde_json::from_slice(&std::fs::read(manifest).map_err(|e|e.to_string())?).map_err(|e|e.to_string())
+}
+
 #[tauri::command] fn run_media_stage(stage:String, input:String)->Result<serde_json::Value,String>{
   let root=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..\\..\\..");
   let mut payload:serde_json::Value=serde_json::from_str(&input).map_err(|e|e.to_string())?;
@@ -75,4 +89,4 @@ fn legacy_dashscope_key() -> Option<String> {
   std::thread::sleep(Duration::from_millis(20)); Ok(run.clone())
 }
 
-fn main(){ tauri::Builder::default().manage(AppState::default()).invoke_handler(tauri::generate_handler![save_settings,generate_sidecar_token,run_media_stage,start_media_run,get_media_run]).run(tauri::generate_context!()).expect("error while running tauri application"); }
+fn main(){ tauri::Builder::default().manage(AppState::default()).invoke_handler(tauri::generate_handler![save_settings,generate_sidecar_token,project_workflow,run_media_stage,start_media_run,get_media_run]).run(tauri::generate_context!()).expect("error while running tauri application"); }
