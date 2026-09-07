@@ -47,13 +47,20 @@ def main(argv=None) -> int:
         if name in ('run', 'resume'): p.add_argument('--mode', choices=('preview', 'render'))
     args = parser.parse_args(argv); project = Path(args.project); manifest_path = project / 'project.json'
     if args.command == 'create':
+        if manifest_path.exists(): raise SystemExit('project already exists; use resume or a new directory')
         project.mkdir(parents=True, exist_ok=True); ProjectManifest.create(project.name, args.story).save(manifest_path); print(f'created {manifest_path}'); return 0
     manifest = ProjectManifest.load(manifest_path)
     if getattr(args, 'mode', None): manifest.mode = args.mode
     if args.command == 'review':
         if not args.shot: raise SystemExit('review requires a shot id')
         shot = manifest.shot(args.shot); shot.review = 'approved'; manifest.save(manifest_path); print(f'approved {args.shot}'); return 0
-    if args.command == 'retry' and args.shot: manifest.shot(args.shot).status = 'planned'
+    if args.command == 'retry':
+        if not args.shot: raise SystemExit('retry requires a shot id')
+        shot = manifest.shot(args.shot)
+        shot.status = 'planned'
+        shot.assets.clear()
+        shot.cache_key = None
+        shot.error = None
     output = render_preview(manifest, project); manifest.save(manifest_path); print(f'preview: {output}'); return 0
 
 if __name__ == '__main__': raise SystemExit(main())

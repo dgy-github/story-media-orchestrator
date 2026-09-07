@@ -20,10 +20,16 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     tts = tts or FakeTTSProvider(); image_provider = image_provider or TextFrameProvider()
     for i, shot in enumerate(manifest.shots, 1):
         key = _cache_key(shot, manifest.mode)
-        cached = shot.cache_key == key and shot.status == "done" and all(Path(p).exists() for p in shot.assets.values())
+        cached = (shot.cache_key == key and shot.status in {"generated", "done"}
+                  and {"image", "audio"} <= shot.assets.keys()
+                  and all(Path(p).is_file() for p in shot.assets.values()))
         if cached:
             continue
+        if shot.cache_key is not None and shot.cache_key != key:
+            shot.assets.clear()
         shot.status = "generating"; shot.error = None
+        manifest.status = "generating"
+        manifest.save(root / "project.json")
         for attempt in range(max_attempts):
             shot.attempts += 1
             try:
@@ -49,6 +55,7 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
             except Exception as exc:
                 shot.error = f"{type(exc).__name__}: {exc}"
                 if attempt + 1 == max_attempts: shot.status = "failed"
+        manifest.save(root / "project.json")
         if shot.status == "failed": manifest.status = "failed"; continue
     ffmpeg = shutil.which("ffmpeg")
     subtitle_file = root / "subtitles.srt"
@@ -61,7 +68,7 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     subtitle_file.write_text("\n".join(subtitle_lines), encoding="utf-8")
     output = root / "preview.mp4"
     images = [shot.assets.get("image") for shot in manifest.shots]
-    if ffmpeg and all(image and Path(image).exists() for image in images):
+    if ffmpeg and images and all(image and Path(image).is_file() and Path(image).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".bmp"} for image in images):
         concat = root / "timeline.txt"
         audio_concat = root / "audio-timeline.txt"
         lines = []
@@ -77,4 +84,5 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     manifest.timeline = [{"shot_id": shot.id, "start": sum(s.duration for s in manifest.shots[:i]), "duration": shot.duration, "transition": "cut"} for i, shot in enumerate(manifest.shots)]
     for shot in manifest.shots:
         if shot.status != "failed": shot.status = "done"
+    manifest.save(root / "project.json")
     return output

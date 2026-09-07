@@ -1,6 +1,7 @@
 """Persistent project manifest for resumable preview workflows."""
 from __future__ import annotations
 import json
+from uuid import uuid4
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
@@ -35,7 +36,12 @@ class ProjectManifest:
 
     def save(self, path: str | Path) -> None:
         target = Path(path); target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(asdict(self), ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary = target.with_name(f".{target.name}.{uuid4().hex}.tmp")
+        try:
+            temporary.write_text(json.dumps(asdict(self), ensure_ascii=False, indent=2), encoding="utf-8")
+            temporary.replace(target)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     @classmethod
     def load(cls, path: str | Path) -> "ProjectManifest":
