@@ -27,17 +27,21 @@ Each project is self-contained:
 ```text
 project/
   project.json
-  frames/
+  frames/ audio/ subtitles.srt
   preview.mp4
 ```
 
-`project.json` tracks each shot as `planned → generating → generated → assembled → done` (or `failed`), along with asset references and output lineage. Resume and retry operate on this manifest instead of starting from scratch.
+`project.json` tracks each shot as `planned → generating → generated → assembled → done` (or `failed`), along with asset references, review state, attempts, cache keys, and output lineage. Resume and retry operate on this manifest instead of starting from scratch. Approve a reviewed shot with `story-media review project shot-01`.
 
 ## Architecture
 
 Providers implement stable contracts (`ImageProvider`, `VideoProvider`, `TTSProvider`) while the orchestrator owns state, caching, retries, quality gates, and timeline assembly. Preview Mode uses image motion, voice, subtitles, and FFmpeg. Render Mode can replace selected shots with image-to-video or text-to-video providers and still fall back to the preview path.
 
 The Python package contains the orchestration contracts and adapters. `apps/desktop` is the Rust/Tauri/Svelte shell and can consume the same runtime state.
+
+## For teams
+
+Need a custom AI media pipeline? We can help with private deployment, provider integration, brand and style workflows, and batch content generation. Open an issue to discuss a collaboration.
 
 ## Development
 

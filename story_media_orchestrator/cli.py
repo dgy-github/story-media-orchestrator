@@ -42,12 +42,15 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog='story-media')
     sub = parser.add_subparsers(dest='command', required=True)
     create = sub.add_parser('create'); create.add_argument('project'); create.add_argument('story')
-    for name in ('run', 'resume', 'retry'):
+    for name in ('run', 'resume', 'retry', 'review'):
         p = sub.add_parser(name); p.add_argument('project'); p.add_argument('shot', nargs='?')
     args = parser.parse_args(argv); project = Path(args.project); manifest_path = project / 'project.json'
     if args.command == 'create':
         project.mkdir(parents=True, exist_ok=True); ProjectManifest.create(project.name, args.story).save(manifest_path); print(f'created {manifest_path}'); return 0
     manifest = ProjectManifest.load(manifest_path)
+    if args.command == 'review':
+        if not args.shot: raise SystemExit('review requires a shot id')
+        shot = manifest.shot(args.shot); shot.review = 'approved'; manifest.save(manifest_path); print(f'approved {args.shot}'); return 0
     if args.command == 'retry' and args.shot: manifest.shot(args.shot).status = 'planned'
     output = render_preview(manifest, project); manifest.save(manifest_path); print(f'preview: {output}'); return 0
 

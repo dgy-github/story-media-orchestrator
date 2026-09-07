@@ -9,6 +9,7 @@ from .ui import launch
 from .manifest import ProjectManifest, Shot
 from .preview import render_preview
 from .tts import TTSProvider, FakeTTSProvider
+from .providers import ImageProvider, VideoProvider, TextFrameProvider
 
 __all__ = ["SingleSceneOrchestrator", "OrchestrationError", "ArtifactRegistry",
            "StoryCampaignAdapter", "HttpStoryCampaignAdapter", "StoryImageAdapter", "StoryVideoAdapter"]
@@ -17,3 +18,4 @@ __all__.extend(["RuntimeConfig", "build_runtime", "build_runtime_from_environmen
 __all__.append("launch")
 __all__.extend(["ProjectManifest", "Shot", "render_preview"])
 __all__.extend(["TTSProvider", "FakeTTSProvider"])
+__all__.extend(["ImageProvider", "VideoProvider", "TextFrameProvider"])

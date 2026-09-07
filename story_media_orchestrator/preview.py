@@ -1,28 +1,49 @@
 """Dependency-light preview renderer; uses ffmpeg when installed."""
 from __future__ import annotations
-import shutil, subprocess
+import hashlib, shutil, subprocess
 from pathlib import Path
 from .manifest import ProjectManifest
 from .tts import FakeTTSProvider, TTSProvider
+from .providers import ImageProvider, TextFrameProvider, VideoProvider
 
-def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider | None = None) -> Path:
+def _cache_key(shot, mode: str) -> str:
+    return hashlib.sha256(f"v1\0{mode}\0{shot.text}\0{shot.duration}".encode()).hexdigest()
+
+
+def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider | None = None,
+                   image_provider: ImageProvider | None = None,
+                   video_provider: VideoProvider | None = None,
+                   *, max_attempts: int = 2) -> Path:
     root = Path(root); root.mkdir(parents=True, exist_ok=True)
     frames = root / "frames"; frames.mkdir(exist_ok=True)
     audio = root / "audio"; audio.mkdir(exist_ok=True)
-    tts = tts or FakeTTSProvider()
+    tts = tts or FakeTTSProvider(); image_provider = image_provider or TextFrameProvider()
     for i, shot in enumerate(manifest.shots, 1):
-        if shot.status == "done" and shot.assets.get("audio") and Path(shot.assets["audio"]).exists():
+        key = _cache_key(shot, manifest.mode)
+        cached = shot.cache_key == key and shot.status == "done" and all(Path(p).exists() for p in shot.assets.values())
+        if cached:
             continue
-        shot.attempts += 1
-        shot.status = "generated"
-        image = shot.assets.get("image")
-        if image and Path(image).exists():
-            frame_path = Path(image)
-        else:
-            frame_path = frames / f"{i:04d}.txt"
-            frame_path.write_text(shot.text, encoding="utf-8")
-        audio_path = tts.synthesize(shot.text, audio / f"{i:04d}.wav")
-        shot.assets["audio"] = str(audio_path)
+        shot.status = "generating"; shot.error = None
+        for attempt in range(max_attempts):
+            shot.attempts += 1
+            try:
+                image = shot.assets.get("image")
+                frame_path = Path(image) if image and Path(image).exists() else image_provider.generate(shot, frames / f"{i:04d}.png")
+                shot.assets["image"] = str(frame_path)
+                shot.assets["audio"] = str(tts.synthesize(shot.text, audio / f"{i:04d}.wav"))
+                if manifest.mode == "render" and video_provider:
+                    try:
+                        shot.assets["video"] = str(video_provider.generate(shot, frame_path, root / "video" / f"{i:04d}.mp4"))
+                        shot.mode = "render"
+                    except Exception as exc:
+                        shot.error = f"video fallback: {type(exc).__name__}: {exc}"
+                        shot.mode = "preview"
+                shot.cache_key = key; shot.status = "generated"
+                break
+            except Exception as exc:
+                shot.error = f"{type(exc).__name__}: {exc}"
+                if attempt + 1 == max_attempts: shot.status = "failed"
+        if shot.status == "failed": manifest.status = "failed"; continue
     ffmpeg = shutil.which("ffmpeg")
     subtitle_file = root / "subtitles.srt"
     clock = 0.0; subtitle_lines = []
@@ -44,7 +65,8 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     else:
         output = root / "preview.txt"
         output.write_text("\n".join(shot.text for shot in manifest.shots), encoding="utf-8")
-    manifest.output = str(output); manifest.status = "done"
+    manifest.output = str(output); manifest.status = "done" if all(s.status != "failed" for s in manifest.shots) else "partial"
     manifest.timeline = [{"shot_id": shot.id, "start": sum(s.duration for s in manifest.shots[:i]), "duration": shot.duration, "transition": "cut"} for i, shot in enumerate(manifest.shots)]
-    for shot in manifest.shots: shot.status = "done"
+    for shot in manifest.shots:
+        if shot.status != "failed": shot.status = "done"
     return output
