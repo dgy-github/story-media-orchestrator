@@ -40,34 +40,28 @@ class SingleSceneOrchestrator:
         scene = scenes[scene_index]
         if not isinstance(scene, dict):
             raise OrchestrationError("story scene must be an object")
-        spans = scene.get("source_spans") or scene.get("spans")
+        spans = scene.get("source_spans") or scene.get("spans") or (["story-package/" + scene["node_id"]] if scene.get("node_id") else None)
         if not isinstance(spans, list) or not spans:
             raise OrchestrationError("scene must carry source spans")
 
         image_plan = _require_schema(
-            self.image_agent(scene=scene, source_spans=spans),
+            self.image_agent(scene=scene, source_spans=spans, **({"quality": image_quality} if image_quality is not None else {})),
             "image-production-plan/v1", "image output",
         )
-        if image_quality is not None:
-            image_plan = self.image_agent(plan=image_plan, quality=image_quality)
-            _require_schema(image_plan, "image-production-plan/v1", "final image output")
         refs = image_plan.get("final_artifacts") or image_plan.get("artifacts")
         if refs is None and isinstance(image_plan.get("first_frame_ref"), str):
             refs = [image_plan["first_frame_ref"], image_plan.get("last_frame_ref", image_plan["first_frame_ref"])]
         if not isinstance(refs, list) or len(refs) < 2 or not all(isinstance(r, str) for r in refs[:2]):
             raise OrchestrationError("image plan must provide first and last frame artifacts")
 
-        video_plan = _require_schema(
-            self.video_agent(scene=scene, source_spans=spans,
-                             first_frame_ref=refs[0], last_frame_ref=refs[-1]),
-            "video-generation-pipeline/v2", "video output",
-        )
-        if video_quality is not None:
-            video_plan = self.video_agent(plan=video_plan, quality=video_quality)
-            _require_schema(video_plan, "video-generation-pipeline/v2", "final video output")
+        video_plan = self.video_agent(scene=scene, story_spans=spans,
+                             first_frame_ref=refs[0], last_frame_ref=refs[-1], **({"quality": video_quality} if video_quality is not None else {}))
+        if not isinstance(video_plan, dict) or video_plan.get("schema") not in {
+                "video-generation-pipeline/v1", "video-generation-pipeline/v2"}:
+            raise OrchestrationError("video output must be video-generation-pipeline/v1 or v2")
         return {
             "schema": "story-media-run/v1",
-            "status": "succeeded",
+            "status": video_plan.get("execution", {}).get("state", "planned"),
             "scene_index": scene_index,
             "story": story,
             "image_plan": image_plan,

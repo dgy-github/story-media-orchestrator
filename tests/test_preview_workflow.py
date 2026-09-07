@@ -29,6 +29,28 @@ def test_render_failure_falls_back_to_preview(tmp_path: Path):
     assert manifest.shots[0].error.startswith("video fallback:")
 
 
+def test_resume_retries_fallback_video_and_reuses_image_and_audio(tmp_path):
+    from unittest.mock import Mock
+    manifest = ProjectManifest.create('demo', 'One shot.')
+    manifest.mode = 'render'
+    render_preview(manifest, tmp_path, video_provider=BrokenVideo())
+    restored = ProjectManifest.load(tmp_path / 'project.json')
+    class RecoveredVideo:
+        def generate(self, shot, image, output):
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(b'video fixture')
+            return output
+    images, audio = Mock(), Mock()
+    images.generate.side_effect = AssertionError('cached image regenerated')
+    audio.synthesize.side_effect = AssertionError('cached audio regenerated')
+    render_preview(restored, tmp_path, image_provider=images, tts=audio, video_provider=RecoveredVideo())
+    assert restored.shots[0].mode == 'render'
+    assert Path(restored.shots[0].assets['video']).read_bytes() == b'video fixture'
+    assert restored.shots[0].error is None
+    images.generate.assert_not_called()
+    audio.synthesize.assert_not_called()
+
+
 def test_text_frames_do_not_enter_ffmpeg(tmp_path, monkeypatch):
     monkeypatch.setattr("story_media_orchestrator.preview.shutil.which", lambda _: "not-a-real-ffmpeg")
     manifest = ProjectManifest.create("demo", "A courier arrives.")
@@ -92,3 +114,36 @@ def test_create_does_not_overwrite_existing_project(tmp_path):
     with pytest.raises(SystemExit):
         main(["create", str(tmp_path), "Replacement."])
     assert ProjectManifest.load(tmp_path / "project.json").story == "Original."
+
+
+def test_assembly_failure_is_persisted_and_resume_reuses_assets(tmp_path, monkeypatch):
+    import subprocess
+
+    class ImageProvider:
+        def generate(self, shot, output):
+            output.write_bytes(b"image fixture")
+            return output
+
+    monkeypatch.setattr("story_media_orchestrator.preview.shutil.which", lambda _: "ffmpeg")
+    def fail(command, **kwargs):
+        raise subprocess.CalledProcessError(1, command, stderr=b"encoder failed")
+    monkeypatch.setattr("story_media_orchestrator.preview.subprocess.run", fail)
+    manifest = ProjectManifest.create("demo", "One shot.")
+    manifest.output = "old-preview.mp4"
+    with pytest.raises(subprocess.CalledProcessError):
+        render_preview(manifest, tmp_path, image_provider=ImageProvider())
+    restored = ProjectManifest.load(tmp_path / "project.json")
+    assert restored.status == "failed"
+    assert restored.output is None
+    assert "CalledProcessError" in restored.error
+    assert restored.shots[0].status == "generated"
+    attempts = restored.shots[0].attempts
+    def succeed(command, **kwargs):
+        Path(command[-1]).write_bytes(b"video fixture")
+    monkeypatch.setattr("story_media_orchestrator.preview.subprocess.run", succeed)
+    output = render_preview(restored, tmp_path)
+    completed = ProjectManifest.load(tmp_path / "project.json")
+    assert output.is_file()
+    assert completed.status == "done"
+    assert completed.error is None
+    assert completed.shots[0].attempts == attempts

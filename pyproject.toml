@@ -8,6 +8,9 @@ version = "0.1.0a1"
 description = "Contract-first orchestration for story, image and video agents"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+preview = ["Pillow>=10.1", "imageio-ffmpeg>=0.5"]
+
 [tool.setuptools.packages.find]
 include = ["story_media_orchestrator*"]
 [project.scripts]

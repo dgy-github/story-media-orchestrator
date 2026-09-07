@@ -1,1 +1,30 @@
-{"productName":"Story Media Orchestrator","version":"0.1.0","identifier":"com.dgy.storymediaorchestrator","build":{"frontendDist":"../dist","devUrl":"http://localhost:5173"},"app":{"windows":[{"title":"Story Media Orchestrator","width":1180,"height":820}],"security":{"csp":null}},"bundle":{"active":false}}
+{
+  "productName": "Story Media Orchestrator",
+  "version": "0.1.0",
+  "identifier": "com.dgy.storymediaorchestrator",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Story Media Orchestrator",
+        "width": 1180,
+        "height": 820,
+        "theme": "Light",
+        "backgroundColor": "#F3F7FC"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      }
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

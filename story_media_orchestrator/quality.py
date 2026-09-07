@@ -12,8 +12,16 @@ def evaluate_artifact(artifact: dict, stage: str) -> dict:
         req = request.Request(url, body, {"Content-Type": "application/json"})
         with request.urlopen(req, timeout=60) as response:
             result = json.loads(response.read())
-        if result.get("schema") != "quality-evaluation/v1":
+        if not isinstance(result, dict) or result.get("schema") != "quality-evaluation/v1":
             raise ValueError("quality evaluator returned an incompatible schema")
-        return result
+        if result.get("decision") not in {"passed", "warning", "failed", "unavailable"}:
+            raise ValueError("quality evaluator returned an invalid decision")
+        if result.get("stage", stage) != stage:
+            raise ValueError("quality result belongs to another stage")
+        if "reason" in result and not isinstance(result["reason"], str):
+            raise ValueError("quality reason must be text")
+        if "failures" in result and not isinstance(result["failures"], list):
+            raise ValueError("quality failures must be a list")
+        return {**result, "stage": stage}
     except Exception as exc:
         return {"schema": "quality-evaluation/v1", "decision": "unavailable", "stage": stage, "reason": f"质量服务不可用: {type(exc).__name__}"}

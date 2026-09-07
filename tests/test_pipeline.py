@@ -51,3 +51,17 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+def test_real_video_adapter_contract_and_planned_status(monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / 'story-video-agent'))
+    from story_video_agent import VideoPromptWorkflow
+    from story_media_orchestrator.adapters import StoryVideoAdapter
+    workflow = VideoPromptWorkflow('project')
+    adapter = StoryVideoAdapter(workflow)
+    runner = SingleSceneOrchestrator(
+        lambda _: {"schema":"story-package/v1", "scenes":[{"node_id":"scene-original"}]},
+        lambda **kw: {"schema":"image-production-plan/v1", "first_frame_ref":"artifact://sha256/" + 'a' * 64, "last_frame_ref":"artifact://sha256/" + 'b' * 64},
+        adapter.run)
+    result = runner.run(story_input={})
+    assert result['status'] == 'planned'
+    assert result['video_plan']['schema'] == 'video-generation-pipeline/v1'

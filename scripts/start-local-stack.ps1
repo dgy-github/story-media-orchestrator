@@ -2,13 +2,14 @@ param(
     [string]$CapabilityUrl = $env:MICROCODEX_CAPABILITY_URL,
     [string]$CapabilityToken = $env:MICROCODEX_CAPABILITY_TOKEN,
     [int]$SidecarPort = 8765,
-    [string]$ComfyUrl = "http://61.157.218.59:31340"
+    [string]$ComfyUrl = "http://127.0.0.1:8188"
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
-$storyRoot = "D:\github_dgy\microcodex-short-drama-studio"
-$imageRoot = "D:\github_dgy\story-image-agent"
-$videoRoot = "D:\github_dgy\story-video-agent"
+$workspaceRoot = Split-Path -Parent $root
+$storyRoot = Join-Path $workspaceRoot "microcodex-short-drama-studio"
+$imageRoot = Join-Path $workspaceRoot "story-image-agent"
+$videoRoot = Join-Path $workspaceRoot "story-video-agent"
 $eventLog = Join-Path $storyRoot "sidecar\campaign_events.db"
 if (!(Test-Path $storyRoot) -or !(Test-Path $imageRoot) -or !(Test-Path $videoRoot)) { throw "sibling agent directory missing" }
 
@@ -33,8 +34,8 @@ $python = Join-Path $storyRoot ".venv\Scripts\python.exe"
 if (!(Test-Path $python)) { $python = "python" }
 $log = Join-Path $root "sidecar.log"
 $errLog = Join-Path $root "sidecar.error.log"
-$args = @("-m", "sidecar.story_sidecar", "--host", "127.0.0.1", "--port", "$SidecarPort", "--event-log", $eventLog)
-Start-Process -FilePath $python -ArgumentList $args -WorkingDirectory $storyRoot -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError $errLog
+$args = @("-m", "campaign_adapter.server", "--host", "127.0.0.1", "--port", "$SidecarPort", "--event-log", $eventLog)
+Start-Process -FilePath $python -ArgumentList $args -WorkingDirectory (Join-Path $storyRoot "sidecar") -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError $errLog
 Start-Sleep -Seconds 2
 $health = $null
 try {

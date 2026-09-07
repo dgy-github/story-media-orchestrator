@@ -33,6 +33,25 @@ class ArtifactRegistry:
             target.write_bytes(payload)
         return f"artifact://sha256/{digest}"
 
+    def put(self, payload: bytes) -> str:
+        """Implement the original video adapter's artifact-store contract."""
+        return self.put_bytes(payload)
+
+    def video_preview(self, ref: str) -> str:
+        """Materialize verified media with a browser-recognizable extension."""
+        payload = self.get_bytes(ref)
+        if len(payload) >= 12 and payload[4:8] == b"ftyp":
+            extension = ".mp4"
+        elif payload.startswith(b"\x1a\x45\xdf\xa3"):
+            extension = ".webm"
+        else:
+            raise ValueError("video artifact is not a supported MP4/WebM container")
+        target = self.root / "previews" / (ref.rsplit("/", 1)[-1] + extension)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.exists() or target.read_bytes() != payload:
+            target.write_bytes(payload)
+        return str(target.resolve())
+
     def get_json(self, ref: str) -> dict[str, Any]:
         payload = self.get_bytes(ref)
         value = json.loads(payload)
