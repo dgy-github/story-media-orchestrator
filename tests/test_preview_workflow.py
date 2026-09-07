@@ -15,7 +15,8 @@ def test_resume_uses_cached_assets(tmp_path: Path):
     attempts = [shot.attempts for shot in manifest.shots]
     render_preview(manifest, tmp_path)
     assert [shot.attempts for shot in manifest.shots] == attempts
-    assert manifest.timeline[1]["start"] == 3.0
+    assert manifest.timeline[1]["start"] == manifest.shots[0].duration
+    assert all("audio" in shot.assets for shot in manifest.shots)
 
 
 def test_render_failure_falls_back_to_preview(tmp_path: Path):
