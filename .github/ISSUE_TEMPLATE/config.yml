@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 定制开发与项目合作
+    url: https://github.com/dgy-github/story-media-orchestrator/blob/main/docs/COLLABORATION.md
+    about: 通过邮件联系开发者，沟通项目需求与交付范围。

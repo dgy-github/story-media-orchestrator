@@ -1,0 +1,21 @@
+name: 问题反馈
+description: 提供复现步骤，帮助定位问题
+title: "[Bug] "
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤与期望行为
+      description: 请说明在哪个节点、执行了什么操作。
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 系统、Python、模型路线与代码版本。
+  - type: textarea
+    id: error
+    attributes:
+      label: 错误与日志
+      description: 请先移除密钥、私有地址和个人信息。
