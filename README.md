@@ -88,7 +88,7 @@ python -m story_media_orchestrator.cli run my-story --real-preview --image-sourc
 
 模型适配与流程状态分开组织。当前包含阿里云 DashScope 生图、Wan 视频、ComfyUI 适配和 Windows 本地语音；不同路线的验收状态见[验证记录](docs/VERIFICATION.md)。
 
-本项目仍处于 **Alpha**。桌面完整功能依赖相邻的故事、图片和视频仓库，以及本机运行环境，目前不是免配置的一键安装包。商业定制能力与本仓库现成功能的范围，以实际需求和验收约定为准。
+本项目仍处于 **Alpha**。桌面完整功能依赖相邻的故事、图片和视频仓库，以及本机运行环境，目前不是免配置的一键安装包。完整验收所用依赖尚未全部公开，见[配套版本说明](docs/DEPENDENCIES.md)。商业定制能力与本仓库现成功能的范围，以实际需求和验收约定为准。
 
 ## 继续了解
 

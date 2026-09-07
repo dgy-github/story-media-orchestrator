@@ -16,6 +16,8 @@ python -m story_media_orchestrator.cli run my-story --real-preview --image-sourc
 
 ## 完整桌面与 AI 工作流
 
+**配套版本发布状态：** 本次验收所用的依赖版本尚未全部公开，默认分支不保证能编译完整桌面。请先阅读[配套版本说明](DEPENDENCIES.md)；下列克隆命令用于准备目录，不代表完整集成版本已发布。
+
 当前采用相邻仓库方式，尚未将全部运行时打成独立安装包。请把以下项目放在同一个父目录；各依赖的安装说明和许可以其仓库为准。
 
 ```text
