@@ -1,13 +1,13 @@
 """Dependency-light preview renderer; uses ffmpeg when installed."""
 from __future__ import annotations
-import hashlib, shutil, subprocess
+import hashlib, shutil, subprocess, wave
 from pathlib import Path
 from .manifest import ProjectManifest
 from .tts import FakeTTSProvider, TTSProvider
 from .providers import ImageProvider, TextFrameProvider, VideoProvider
 
 def _cache_key(shot, mode: str) -> str:
-    return hashlib.sha256(f"v1\0{mode}\0{shot.text}\0{shot.duration}".encode()).hexdigest()
+    return hashlib.sha256(f"v1\0{mode}\0{shot.text}".encode()).hexdigest()
 
 
 def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider | None = None,
@@ -30,7 +30,13 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
                 image = shot.assets.get("image")
                 frame_path = Path(image) if image and Path(image).exists() else image_provider.generate(shot, frames / f"{i:04d}.png")
                 shot.assets["image"] = str(frame_path)
-                shot.assets["audio"] = str(tts.synthesize(shot.text, audio / f"{i:04d}.wav"))
+                audio_path = tts.synthesize(shot.text, audio / f"{i:04d}.wav")
+                shot.assets["audio"] = str(audio_path)
+                try:
+                    with wave.open(str(audio_path), "rb") as source:
+                        shot.duration = max(1.0, source.getnframes() / source.getframerate())
+                except (wave.Error, OSError):
+                    pass
                 if manifest.mode == "render" and video_provider:
                     try:
                         shot.assets["video"] = str(video_provider.generate(shot, frame_path, root / "video" / f"{i:04d}.mp4"))
@@ -57,11 +63,13 @@ def render_preview(manifest: ProjectManifest, root: str | Path, tts: TTSProvider
     images = [shot.assets.get("image") for shot in manifest.shots]
     if ffmpeg and all(image and Path(image).exists() for image in images):
         concat = root / "timeline.txt"
+        audio_concat = root / "audio-timeline.txt"
         lines = []
         for shot in manifest.shots:
             lines += [f"file '{Path(shot.assets['image']).resolve().as_posix()}'", f"duration {shot.duration}"]
         lines.append(lines[-2]); concat.write_text("\n".join(lines), encoding="utf-8")
-        subprocess.run([ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat), "-f", "lavfi", "-i", "anullsrc=r=16000:cl=mono", "-shortest", "-vf", "scale=1280:720,format=yuv420p", "-c:v", "libx264", "-c:a", "aac", str(output)], check=True, capture_output=True)
+        audio_concat.write_text("\n".join(f"file '{Path(shot.assets['audio']).resolve().as_posix()}'" for shot in manifest.shots), encoding="utf-8")
+        subprocess.run([ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat), "-f", "concat", "-safe", "0", "-i", str(audio_concat), "-shortest", "-vf", "scale=1280:720,format=yuv420p", "-c:v", "libx264", "-c:a", "aac", str(output)], check=True, capture_output=True)
     else:
         output = root / "preview.txt"
         output.write_text("\n".join(shot.text for shot in manifest.shots), encoding="utf-8")

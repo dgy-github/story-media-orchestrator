@@ -34,6 +34,13 @@ class ArtifactRegistry:
         return f"artifact://sha256/{digest}"
 
     def get_json(self, ref: str) -> dict[str, Any]:
+        payload = self.get_bytes(ref)
+        value = json.loads(payload)
+        if not isinstance(value, dict):
+            raise ValueError("artifact must contain an object")
+        return value
+
+    def get_bytes(self, ref: str) -> bytes:
         prefix = "artifact://sha256/"
         if not isinstance(ref, str) or not ref.startswith(prefix):
             raise ValueError("invalid artifact reference")
@@ -43,7 +50,4 @@ class ArtifactRegistry:
         payload = (self.root / digest).read_bytes()
         if hashlib.sha256(payload).hexdigest() != digest:
             raise RuntimeError("artifact integrity check failed")
-        value = json.loads(payload)
-        if not isinstance(value, dict):
-            raise ValueError("artifact must contain an object")
-        return value
+        return payload

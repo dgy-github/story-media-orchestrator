@@ -11,7 +11,7 @@ from typing import Any, Callable
 from .adapters import HttpStoryCampaignAdapter, StoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
 from .pipeline import SingleSceneOrchestrator
 from .registry import ArtifactRegistry
-from .config import OrchestratorConfig
+from .config import ModelConfig, OrchestratorConfig
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,7 @@ class RuntimeConfig:
     image_root: Path
     video_root: Path
     artifact_root: Path
+    models: ModelConfig = ModelConfig()
 
     @classmethod
     def from_environment(cls) -> "RuntimeConfig":
@@ -72,5 +73,5 @@ def build_runtime_from_environment(*, story_runner: Callable[..., dict[str, Any]
             raise RuntimeError("provide story_runner or STORY_SIDECAR_URL/STORY_SIDECAR_TOKEN")
         story_runner = HttpStoryCampaignAdapter(cfg.story_sidecar_url, cfg.story_sidecar_token).run
     return build_runtime(story_runner=story_runner,
-                         config=RuntimeConfig(cfg.image_root, cfg.video_root, cfg.artifact_root),
+                         config=RuntimeConfig(cfg.image_root, cfg.video_root, cfg.artifact_root, cfg.models),
                          image_provider=image_provider, video_client=video_client)
