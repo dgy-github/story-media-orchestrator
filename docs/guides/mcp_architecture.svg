@@ -1,0 +1,35 @@
+<svg viewBox="0 0 1000 250" width="1000" height="250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#56b6f7"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="250" rx="16" fill="#0d1428"/>
+  <rect x="24" y="20" width="275" height="92" rx="14" fill="#172b52" stroke="#56b6f7" stroke-width="1.6"/>
+  <text x="161" y="50" text-anchor="middle" fill="#a9dcff" font-size="13" font-weight="700">素材窗口（Producer Agent）</text>
+  <text x="161" y="74" text-anchor="middle" fill="#ffffff" font-size="13">--profile producer · 9 个工具</text>
+  <text x="161" y="96" text-anchor="middle" fill="#8cf2c2" font-size="12">租约：role="asset_producer"</text>
+
+  <rect x="24" y="138" width="275" height="92" rx="14" fill="#2c2159" stroke="#7c6cff" stroke-width="1.6"/>
+  <text x="161" y="168" text-anchor="middle" fill="#c7bfff" font-size="13" font-weight="700">审片窗口（Critic Agent）</text>
+  <text x="161" y="192" text-anchor="middle" fill="#ffffff" font-size="13">--profile critic · 剧本预演 + 审片</text>
+  <text x="161" y="214" text-anchor="middle" fill="#ffd99a" font-size="12">租约：role="critic"（可并发）</text>
+
+  <line x1="299" y1="66" x2="395" y2="108" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="299" y1="184" x2="395" y2="142" stroke="#7c6cff" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <rect x="400" y="58" width="245" height="134" rx="16" fill="#111d38" stroke="#3ddc97" stroke-width="1.8"/>
+  <text x="522" y="92" text-anchor="middle" fill="#8cf2c2" font-size="13" font-weight="700">本机 MCP Server</text>
+  <text x="522" y="118" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">stdio / streamable-http</text>
+  <text x="522" y="144" text-anchor="middle" fill="#9eb0d6" font-size="12">127.0.0.1:8780/mcp</text>
+  <text x="522" y="168" text-anchor="middle" fill="#a9dcff" font-size="12">并发角色锁 · 多模态诊断图</text>
+
+  <line x1="645" y1="125" x2="725" y2="125" stroke="#3ddc97" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <rect x="730" y="42" width="245" height="166" rx="16" fill="#152240" stroke="#2f467a" stroke-width="1.6"/>
+  <text x="852" y="76" text-anchor="middle" fill="#a9dcff" font-size="13" font-weight="700">核心状态机 &amp; 资产库</text>
+  <text x="852" y="106" text-anchor="middle" fill="#ffffff" font-size="13">project.json（四态验收）</text>
+  <text x="852" y="132" text-anchor="middle" fill="#9eb0d6" font-size="12">frames/ · audio/ · video/</text>
+  <text x="852" y="158" text-anchor="middle" fill="#9eb0d6" font-size="12">2x2 宫格 · 8帧条 · ROI 放大</text>
+  <text x="852" y="184" text-anchor="middle" fill="#8cf2c2" font-size="12">.flywheel/playbook.json</text>
+</svg>

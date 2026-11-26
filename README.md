@@ -92,7 +92,7 @@ python -m story_media_orchestrator.cli run my-story --real-preview --image-sourc
 
 ## 新手教学文档
 
-- [图文并茂交互式 HTML 新手手册（在线直达预览）](https://htmlpreview.github.io/?https://github.com/dgy-github/story-media-orchestrator/blob/main/docs/guides/index.html) · [本地离线源码 `docs/guides/index.html`](docs/guides/index.html)
+- [图文并茂新手实战手册（GitHub 原生直览，含架构图）](docs/guides/README.md) · [离线交互版 HTML (`docs/guides/index.html`)](docs/guides/index.html)
 - [10 分钟零门槛上手：从一句话故事到成片与剪映草稿](docs/TUTORIAL_QUICKSTART.md)
 - [手把手教程：用 AI 客户端（Antigravity / Codex / Cursor）通过 MCP 协同做片与审片](docs/TUTORIAL_MCP_AGENT.md)
 - [AI 短剧质量验收与低成本返工实战指南](docs/TUTORIAL_QA_AND_REWORK.md)
