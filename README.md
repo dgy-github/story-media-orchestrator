@@ -90,6 +90,12 @@ python -m story_media_orchestrator.cli run my-story --real-preview --image-sourc
 
 本项目仍处于 **Alpha**。桌面完整功能依赖相邻的故事、图片和视频仓库，以及本机运行环境，目前不是免配置的一键安装包。配套代码已发布，请使用[指定版本组合](docs/DEPENDENCIES.md)。商业定制能力与本仓库现成功能的范围，以实际需求和验收约定为准。
 
+## 新手教学文档
+
+- [10 分钟零门槛上手：从一句话故事到成片与剪映草稿](docs/TUTORIAL_QUICKSTART.md)
+- [手把手教程：用 AI 客户端（Antigravity / Codex / Cursor）通过 MCP 协同做片与审片](docs/TUTORIAL_MCP_AGENT.md)
+- [AI 短剧质量验收与低成本返工实战指南](docs/TUTORIAL_QA_AND_REWORK.md)
+
 ## 继续了解
 
 - [安装、运行与常见问题](docs/GETTING_STARTED.md)
