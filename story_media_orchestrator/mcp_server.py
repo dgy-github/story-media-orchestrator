@@ -101,6 +101,10 @@ MCP_TOOL_PROFILES: dict[str, frozenset[str] | None] = {
             "story_cast_character_3d_from_photo",
             "story_inject_external_asset",
             "story_run_pipeline_stage",
+            "story_audit_script",
+            "story_rehearse_script",
+            "story_patch_script_beat",
+            "story_insert_bridge_shot",
             "story_lint_h3_bundle",
         }
     ),
@@ -115,6 +119,10 @@ MCP_TOOL_PROFILES: dict[str, frozenset[str] | None] = {
             "story_submit_quality_verdict",
             "story_intervene_and_rework_shot",
             "story_lint_handoff",
+            "story_audit_script",
+            "story_rehearse_script",
+            "story_patch_script_beat",
+            "story_insert_bridge_shot",
             "story_audit_speech",
             "story_verify_master",
             "story_finalize_pipeline",
@@ -134,6 +142,10 @@ MCP_TOOL_PROFILES: dict[str, frozenset[str] | None] = {
             "story_submit_quality_verdict",
             "story_intervene_and_rework_shot",
             "story_run_pipeline_stage",
+            "story_audit_script",
+            "story_rehearse_script",
+            "story_patch_script_beat",
+            "story_insert_bridge_shot",
             "story_lint_h3_bundle",
             "story_audit_speech",
             "story_verify_master",
@@ -1092,6 +1104,116 @@ def create_mcp_server(
             client_id,
             project_id,
             story=story,
+        )
+
+    @server.tool(
+        description=(
+            "Run pre-production script quality rehearsal: combines per-shot shootability audit, genre-specific missing "
+            "content analysis (xianxia/urban_suspense/romance/general), and historical rendered-demo lessons from "
+            ".flywheel/playbook.json to return prioritized repair suggestions before image/video generation."
+        )
+    )
+    def story_rehearse_script(
+        project_dir: str,
+        genre: str | None = None,
+    ) -> dict[str, Any]:
+        from .script_audit import rehearse_project_script
+
+        return rehearse_project_script(
+            project_dir,
+            genre=genre,
+            server_flywheel_dir=default_flywheel_dir,
+        )
+
+    @server.tool(
+        description=(
+            "Audit all shots in a project for pre-production script detail & shootability "
+            "(abstract emotion without physical action, multi-action overload, vague VFX, peak pose as start frame, "
+            "missing framing/location anchors, speech pacing) and identify failed videos that should rewind to script."
+        )
+    )
+    def story_audit_script(project_dir: str) -> dict[str, Any]:
+        from .script_audit import audit_project_script
+
+        return audit_project_script(project_dir)
+
+    @server.tool(
+        description=(
+            "Revise a shot's upstream script beat (text, visual_action, kinetic_action, framing, location, continuity) "
+            "when pre-production audit or video QA reveals a story/action root cause. Surgically invalidates only that "
+            "shot's stale visual assets while preserving unaffected shots."
+        )
+    )
+    def story_patch_script_beat(
+        project_dir: str,
+        shot_id: str,
+        new_text: str | None = None,
+        visual_action: str | None = None,
+        kinetic_action: str | None = None,
+        framing: str | None = None,
+        location: str | None = None,
+        continuity: str | None = None,
+        narration: str | None = None,
+        duration: float | None = None,
+        invalidate_audio: bool = False,
+        reason: str = "",
+        supervisor_id: str = "script-supervisor",
+        lease_token: str | None = None,
+    ) -> dict[str, Any]:
+        from .script_audit import patch_shot_script_beat
+
+        return patch_shot_script_beat(
+            project_dir,
+            shot_id,
+            new_text=new_text,
+            visual_action=visual_action,
+            kinetic_action=kinetic_action,
+            framing=framing,
+            location=location,
+            continuity=continuity,
+            narration=narration,
+            duration=duration,
+            invalidate_audio=invalidate_audio,
+            reason=reason,
+            supervisor_id=supervisor_id,
+            lease_token=lease_token,
+        )
+
+    @server.tool(
+        description=(
+            "Insert an anchored causal-bridge, anticipation, reaction, or prop-handoff shot immediately after "
+            "insert_after_shot_id without disturbing existing shot IDs or already-passed neighbor caches."
+        )
+    )
+    def story_insert_bridge_shot(
+        project_dir: str,
+        insert_after_shot_id: str,
+        text: str,
+        visual_action: str = "",
+        framing: str = "中景",
+        location: str = "",
+        continuity: str = "",
+        story_role: str = "causal_bridge",
+        duration: float = 3.5,
+        new_shot_id: str | None = None,
+        supervisor_id: str = "script-supervisor",
+        lease_token: str | None = None,
+    ) -> dict[str, Any]:
+        from .script_audit import insert_script_bridge_shot
+
+        return insert_script_bridge_shot(
+            project_dir,
+            insert_after_shot_id,
+            text=text,
+            visual_action=visual_action,
+            framing=framing,
+            location=location,
+            continuity=continuity,
+            story_role=story_role,
+            duration=duration,
+            new_shot_id=new_shot_id,
+            supervisor_id=supervisor_id,
+            lease_token=lease_token,
         )
 
     server.tool = _orig_tool  # type: ignore[method-assign]

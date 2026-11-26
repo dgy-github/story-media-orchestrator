@@ -221,6 +221,40 @@ def main(argv=None) -> int:
     icw.add_argument('client_id')
     icw.add_argument('project_id')
     icw.add_argument('--story', default='')
+    aus = sub.add_parser('audit-script')
+    aus.add_argument('project')
+    aus.add_argument('--json-out')
+    rhs = sub.add_parser('rehearse-script')
+    rhs.add_argument('project')
+    rhs.add_argument('--genre')
+    rhs.add_argument('--flywheel-dir')
+    rhs.add_argument('--json-out')
+    psb = sub.add_parser('patch-script')
+    psb.add_argument('project')
+    psb.add_argument('shot')
+    psb.add_argument('--text', dest='new_text')
+    psb.add_argument('--visual-action')
+    psb.add_argument('--kinetic-action')
+    psb.add_argument('--framing')
+    psb.add_argument('--location')
+    psb.add_argument('--continuity')
+    psb.add_argument('--narration')
+    psb.add_argument('--duration', type=float)
+    psb.add_argument('--invalidate-audio', action='store_true')
+    psb.add_argument('--reason', default='')
+    psb.add_argument('--lease-token')
+    ibs = sub.add_parser('insert-bridge')
+    ibs.add_argument('project')
+    ibs.add_argument('after_shot')
+    ibs.add_argument('--text', required=True)
+    ibs.add_argument('--visual-action', default='')
+    ibs.add_argument('--framing', default='中景')
+    ibs.add_argument('--location', default='')
+    ibs.add_argument('--continuity', default='')
+    ibs.add_argument('--story-role', default='causal_bridge')
+    ibs.add_argument('--duration', type=float, default=3.5)
+    ibs.add_argument('--shot-id', dest='new_shot_id')
+    ibs.add_argument('--lease-token')
     for name in ('run', 'resume', 'retry', 'review'):
         p = sub.add_parser(name); p.add_argument('project'); p.add_argument('shot', nargs='?')
         if name in ('run', 'resume'): p.add_argument('--mode', choices=('preview', 'render'))
@@ -292,15 +326,41 @@ def main(argv=None) -> int:
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
-        return 0 if report.ok else 1
-    if args.command == 'lint-handoff':
-        from .production_playbook import lint_handoff_manifest
-        payload = lint_handoff_manifest(
-            Path(args.manifest_path),
-            require_first_frame_exists=bool(args.check_files),
+        return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
         )
-        if args.json_out:
-            Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if payload['ok'] else 1
     if args.command == 'verify-master':
@@ -326,6 +386,42 @@ def main(argv=None) -> int:
         payload = report.to_dict()
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if report.ok else 1
     if args.command == 'assemble-native-chapter':
@@ -417,6 +513,42 @@ def main(argv=None) -> int:
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if report.ok else 1
     if args.command == 'critic-panel':
         from .external_critics import run_external_critic_panel, run_project_critic_panel
@@ -451,6 +583,42 @@ def main(argv=None) -> int:
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if ok else 1
     if args.command == 'nightly-run':
         from .nightly_runner import run_unattended_episode
@@ -473,6 +641,42 @@ def main(argv=None) -> int:
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
     if args.command == 'package-delivery':
         from .delivery_bundle import package_commercial_delivery
         payload = package_commercial_delivery(
@@ -489,6 +693,42 @@ def main(argv=None) -> int:
             Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
     if args.command == 'init-client-workspace':
         from .delivery_bundle import init_isolated_client_workspace
         payload = init_isolated_client_workspace(
@@ -497,6 +737,106 @@ def main(argv=None) -> int:
             args.project_id,
             story=args.story,
         )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0
+    if args.command == 'rehearse-script':
+        from .script_audit import rehearse_project_script
+        payload = rehearse_project_script(
+            args.project,
+            genre=args.genre,
+            server_flywheel_dir=args.flywheel_dir,
+        )
+        if args.json_out:
+            Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('p0_blocking_count', 0) == 0 else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if report.ok else 1
+    if args.command == 'lint-handoff':
+        from .production_playbook import lint_handoff_manifest
+        payload = lint_handoff_manifest(
+            Path(args.manifest_path),
+            require_first_frame_exists=bool(args.check_files),
+        )
+        if args.json_out:
+            Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('ok') else 1
+    if args.command == 'patch-script':
+        from .script_audit import patch_shot_script_beat
+        payload = patch_shot_script_beat(
+            args.project,
+            args.shot,
+            new_text=args.new_text,
+            visual_action=args.visual_action,
+            kinetic_action=args.kinetic_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            narration=args.narration,
+            duration=args.duration,
+            invalidate_audio=bool(args.invalidate_audio),
+            reason=args.reason,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0 if payload.get('patched') else 1
+    if args.command == 'insert-bridge':
+        from .script_audit import insert_script_bridge_shot
+        payload = insert_script_bridge_shot(
+            args.project,
+            args.after_shot,
+            text=args.text,
+            visual_action=args.visual_action,
+            framing=args.framing,
+            location=args.location,
+            continuity=args.continuity,
+            story_role=args.story_role,
+            duration=float(args.duration),
+            new_shot_id=args.new_shot_id,
+            lease_token=args.lease_token,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
+        return 0
+    if args.command == 'audit-script':
+        from .script_audit import audit_project_script
+        payload = audit_project_script(args.project)
+        if args.json_out:
+            Path(args.json_out).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(payload, ensure_ascii=False, indent=2), flush=True)
         return 0
     project = Path(args.project); manifest_path = project / 'project.json'
