@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Story Media Orchestrator — 图文并茂新手实战手册</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --surface: #121a2f;
+      --surface-2: #18233f;
+      --border: #263459;
+      --text: #e8eefc;
+      --muted: #9eb0d6;
+      --accent: #56b6f7;
+      --accent-2: #7c6cff;
+      --green: #3ddc97;
+      --amber: #ffb84d;
+      --red: #ff6b7a;
+      --radius: 14px;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top right, #162244 0%, var(--bg) 52%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.hero {
+      background: linear-gradient(135deg, rgba(86, 182, 247, 0.16), rgba(124, 108, 255, 0.16));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(86, 182, 247, 0.16);
+      border: 1px solid rgba(86, 182, 247, 0.4);
+      color: #a9dcff;
+    }
+    .badge.green { background: rgba(61, 220, 151, 0.14); border-color: rgba(61, 220, 151, 0.4); color: #8cf2c2; }
+    .badge.purple { background: rgba(124, 108, 255, 0.16); border-color: rgba(124, 108, 255, 0.45); color: #c7bfff; }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 4vw, 38px);
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 780px;
+      font-size: 16px;
+    }
+    nav.tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 24px 0 28px;
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      background: rgba(11, 16, 32, 0.86);
+      backdrop-filter: blur(10px);
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover { color: var(--text); border-color: var(--accent); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #081022;
+      border-color: transparent;
+    }
+    section.panel { display: none; animation: fadeIn 0.25s ease; }
+    section.panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 21px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card h3 { margin: 18px 0 8px; font-size: 16px; color: #c7daff; }
+    .muted { color: var(--muted); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .mini-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .mini-card .kicker {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .mini-card h4 { margin: 0 0 8px; font-size: 16px; }
+    .mini-card p { margin: 0; font-size: 14px; color: var(--muted); }
+    .diagram-box {
+      background: #0d1428;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    .diagram-box svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-width: 680px;
+    }
+    .code-wrap {
+      position: relative;
+      margin: 12px 0;
+    }
+    pre {
+      margin: 0;
+      background: #090e1d;
+      border: 1px solid #233154;
+      border-radius: 12px;
+      padding: 16px 76px 16px 16px;
+      overflow-x: auto;
+      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+      font-size: 13px;
+      color: #d6e4ff;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(86, 182, 247, 0.16);
+      color: #a9dcff;
+      border: 1px solid rgba(86, 182, 247, 0.4);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: rgba(86, 182, 247, 0.28); }
+    .step-list { display: flex; flex-direction: column; gap: 14px; }
+    .step-item {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .step-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #081022;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: #b9d7ff; background: rgba(86, 182, 247, 0.08); }
+    .pill {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .pill.pass { background: rgba(61, 220, 151, 0.16); color: var(--green); }
+    .pill.warn { background: rgba(255, 184, 77, 0.16); color: var(--amber); }
+    .pill.fail { background: rgba(255, 107, 122, 0.16); color: var(--red); }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: rgba(86, 182, 247, 0.08);
+      padding: 14px 16px;
+      border-radius: 0 10px 10px 0;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="badge-row">
+        <span class="badge">Open-Core 开源版</span>
+        <span class="badge green">零 API Key 可跑通预览</span>
+        <span class="badge purple">支持 Antigravity / Codex / Cursor MCP</span>
+      </div>
+      <h1>Story Media Orchestrator 图文新手手册</h1>
+      <p>
+        面向初学者的离线可视化交互教程：涵盖 <strong>10 分钟快速出片</strong>、<strong>MCP 多 Agent 协同看片与改图</strong>、
+        以及 <strong>四态验收与低成本外科返工</strong>。直接双击本地打开即可阅读，所有命令支持一键复制。
+      </p>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-target="overview">1. 架构全景图</button>
+      <button class="tab-btn" data-target="quickstart">2. 10 分钟零门槛上手</button>
+      <button class="tab-btn" data-target="mcp">3. MCP 多 Agent 协同</button>
+      <button class="tab-btn" data-target="qa">4. 质量验收与低成本返工</button>
+    </nav>
+
+    <!-- TAB 1: OVERVIEW -->
+    <section id="overview" class="panel active">
+      <div class="card">
+        <h2>端到端工作流全景图</h2>
+        <p class="muted">
+          把「剧本拆镜 → 关键帧/配音/视频生成 → 多模态质检 → 单镜外科返工 → 硬门禁出片」固化在同一个状态机（<code>project.json</code>）中，既支持命令行无人值守，也支持 AI 客户端经 MCP 实时接管。
+        </p>
+        <div class="diagram-box">
+          <svg viewBox="0 0 1040 270" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1d3666"/>
+                <stop offset="100%" stop-color="#142347"/>
+              </linearGradient>
+              <linearGradient id="gPurple" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#35286b"/>
+                <stop offset="100%" stop-color="#1e1b44"/>
+              </linearGradient>
+              <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#144d3e"/>
+                <stop offset="100%" stop-color="#10332d"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#56b6f7"/>
+              </marker>
+            </defs>
+
+            <!-- Step 1 -->
+            <rect x="20" y="34" width="165" height="96" rx="14" fill="url(#gBlue)" stroke="#56b6f7" stroke-width="1.5"/>
+            <text x="102" y="66" text-anchor="middle" fill="#a9dcff" font-size="12" font-weight="700">STEP 1 · 剧本立项</text>
+            <text x="102" y="90" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">一句话拆镜</text>
+            <text x="102" y="112" text-anchor="middle" fill="#9eb0d6" font-size="12">生成 project.json</text>
+
+            <!-- Arrow 1->2 -->
+            <line x1="185" y1="82" x2="225" y2="82" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Step 2 -->
+            <rect x="228" y="34" width="175" height="96" rx="14" fill="url(#gBlue)" stroke="#56b6f7" stroke-width="1.5"/>
+            <text x="315" y="66" text-anchor="middle" fill="#a9dcff" font-size="12" font-weight="700">STEP 2 · 素材准备</text>
+            <text x="315" y="90" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">首帧 + 配音 + 渲染</text>
+            <text x="315" y="112" text-anchor="middle" fill="#9eb0d6" font-size="12">本地预览 / MCP 注入</text>
+
+            <!-- Arrow 2->3 -->
+            <line x1="403" y1="82" x2="443" y2="82" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Step 3 -->
+            <rect x="446" y="34" width="180" height="96" rx="14" fill="url(#gPurple)" stroke="#7c6cff" stroke-width="1.5"/>
+            <text x="536" y="66" text-anchor="middle" fill="#c7bfff" font-size="12" font-weight="700">STEP 3 · 多模态质检</text>
+            <text x="536" y="90" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">2x2 / 8帧 / ROI 看片</text>
+            <text x="536" y="112" text-anchor="middle" fill="#9eb0d6" font-size="12">硬门前置 + 大模型审片</text>
+
+            <!-- Arrow 3->4 -->
+            <line x1="626" y1="82" x2="666" y2="82" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Step 4 -->
+            <rect x="669" y="34" width="160" height="96" rx="14" fill="url(#gBlue)" stroke="#ffb84d" stroke-width="1.5"/>
+            <text x="749" y="66" text-anchor="middle" fill="#ffd99a" font-size="12" font-weight="700">STEP 4 · 四道硬门</text>
+            <text x="749" y="90" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">全自动发布校验</text>
+            <text x="749" y="112" text-anchor="middle" fill="#9eb0d6" font-size="12">包检 / 对白 / 母带</text>
+
+            <!-- Arrow 4->5 -->
+            <line x1="829" y1="82" x2="869" y2="82" stroke="#3ddc97" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Step 5 -->
+            <rect x="872" y="34" width="148" height="96" rx="14" fill="url(#gGreen)" stroke="#3ddc97" stroke-width="1.5"/>
+            <text x="946" y="66" text-anchor="middle" fill="#8cf2c2" font-size="12" font-weight="700">STEP 5 · 交付</text>
+            <text x="946" y="90" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">MP4 + 剪映草稿</text>
+            <text x="946" y="112" text-anchor="middle" fill="#a9dcff" font-size="12">沉淀至 .flywheel</text>
+
+            <!-- Rework Feedback Loop -->
+            <path d="M 536 130 L 536 198 L 315 198 L 315 136" fill="none" stroke="#ff6b7a" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrow)"/>
+            <rect x="348" y="177" width="160" height="38" rx="10" fill="#2b1625" stroke="#ff6b7a" stroke-width="1.2"/>
+            <text x="428" y="200" text-anchor="middle" fill="#ffb3bc" font-size="12" font-weight="700">单镜外科返工（不重跑全集）</text>
+
+            <!-- Flywheel Box -->
+            <rect x="669" y="172" width="351" height="48" rx="10" fill="#13203d" stroke="#2f467a" stroke-width="1.2"/>
+            <text x="844" y="201" text-anchor="middle" fill="#9eb0d6" font-size="12.5">质量飞轮 (.flywheel)：核验通过的修复案例自动回灌下一集</text>
+          </svg>
+        </div>
+
+        <div class="grid-3">
+          <div class="mini-card">
+            <div class="kicker">零门槛启动</div>
+            <h4>内置 FFmpeg，免配 PATH</h4>
+            <p>装 <code>pip install -e ".[preview,mcp]"</code> 即自带 <code>imageio-ffmpeg</code>，无 <code>ffprobe</code> 也能跑通母带校验。</p>
+          </div>
+          <div class="mini-card">
+            <div class="kicker">单镜精准止损</div>
+            <h4>输入指纹防脏缓存</h4>
+            <p>修改首帧、提示词或音轨只重做受影响的单镜，未改动镜头和配音全部复用，大幅省钱。</p>
+          </div>
+          <div class="mini-card">
+            <div class="kicker">双通道接入</div>
+            <h4>CLI 无人值守 + MCP 接管</h4>
+            <p>日常全自动批跑走 CLI，疑难镜头直接让 Antigravity / Codex / Cursor 通过 MCP 看图修片。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: QUICKSTART -->
+    <section id="quickstart" class="panel">
+      <div class="card">
+        <h2>10 分钟零门槛上手（无需任何 API Key）</h2>
+        <p class="muted">按顺序复制下面 4 条命令，即可在本地跑出第一条带字幕的 MP4 成片与剪映工程草稿。</p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div>
+              <h3 style="margin-top:0">安装依赖并运行环境自检</h3>
+              <p class="muted">推荐 Python 3.11+。<code>preview</code> 自带 FFmpeg 二进制，<code>mcp</code> 安装视觉拆帧与 MCP 网关依赖。</p>
+              <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code>pip install -e ".[preview,mcp]"
+python -m story_media_orchestrator.cli doctor</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div>
+              <h3 style="margin-top:0">用一句话创建短剧工程</h3>
+              <p class="muted">系统自动切分镜头并生成 <code>demo-ep01/project.json</code> 状态机。</p>
+              <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code>python -m story_media_orchestrator.cli create demo-ep01 "林雾撑伞走过雨夜长街。她停在钟楼门前，抬头望向亮着暖光的阁楼。"</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div>
+              <h3 style="margin-top:0">零成本跑通预览版成片（Preview 模式）</h3>
+              <p class="muted">不调用付费 API，直接合成可播放 MP4（Windows 下可把 <code>silent</code> 改为 <code>windows</code> 启用本地语音）。</p>
+              <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code>python -m story_media_orchestrator.cli run demo-ep01 --mode preview --real-preview --tts-source silent --auto</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div>
+              <h3 style="margin-top:0">一键导出剪映草稿</h3>
+              <p class="muted">把生成的草稿文件夹复制到剪映草稿目录，即可继续加配乐、特效或精调切点。</p>
+              <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code>python -m story_media_orchestrator.cli export-jianying demo-ep01</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>关于本地环境依赖：</strong>
+          日常预览、切帧、MCP 审片和 <code>verify-master</code> 校验只需 <code>pip install -e ".[preview,mcp]"</code>（已内置 <code>ffmpeg</code> 且支持无 <code>ffprobe</code> 回退）。仅当你需要使用对白语音识别审计 <code>audit-speech</code> 时，再额外安装 <code>pip install -e ".[asr]"</code>。
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MCP -->
+    <section id="mcp" class="panel">
+      <div class="card">
+        <h2>MCP 多 Agent 并发协同架构</h2>
+        <p class="muted">
+          直接把本工程作为 MCP Server 挂进 <strong>Antigravity / Codex / Cursor</strong>，复用客户端里已有的多模态大模型看图、生图、注入素材与提交质检裁决。
+        </p>
+
+        <div class="diagram-box">
+          <svg viewBox="0 0 1000 260" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#56b6f7"/>
+              </marker>
+            </defs>
+            <!-- Producer Client -->
+            <rect x="24" y="24" width="275" height="92" rx="14" fill="#172b52" stroke="#56b6f7" stroke-width="1.6"/>
+            <text x="161" y="54" text-anchor="middle" fill="#a9dcff" font-size="13" font-weight="700">素材窗口（Producer Agent）</text>
+            <text x="161" y="78" text-anchor="middle" fill="#ffffff" font-size="13">--profile producer · 9 个工具</text>
+            <text x="161" y="100" text-anchor="middle" fill="#8cf2c2" font-size="12">租约：role="asset_producer"</text>
+
+            <!-- Critic Client -->
+            <rect x="24" y="144" width="275" height="92" rx="14" fill="#2c2159" stroke="#7c6cff" stroke-width="1.6"/>
+            <text x="161" y="174" text-anchor="middle" fill="#c7bfff" font-size="13" font-weight="700">审片窗口（Critic Agent）</text>
+            <text x="161" y="198" text-anchor="middle" fill="#ffffff" font-size="13">--profile critic · 13 个工具</text>
+            <text x="161" y="220" text-anchor="middle" fill="#ffd99a" font-size="12">租约：role="critic"（可并发）</text>
+
+            <!-- Arrows -->
+            <line x1="299" y1="70" x2="395" y2="112" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow2)"/>
+            <line x1="299" y1="190" x2="395" y2="148" stroke="#7c6cff" stroke-width="2" marker-end="url(#arrow2)"/>
+
+            <!-- MCP Gateway -->
+            <rect x="400" y="62" width="245" height="136" rx="16" fill="#111d38" stroke="#3ddc97" stroke-width="1.8"/>
+            <text x="522" y="96" text-anchor="middle" fill="#8cf2c2" font-size="13" font-weight="700">本机 MCP Server</text>
+            <text x="522" y="122" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">stdio / streamable-http</text>
+            <text x="522" y="148" text-anchor="middle" fill="#9eb0d6" font-size="12">127.0.0.1:8780/mcp</text>
+            <text x="522" y="172" text-anchor="middle" fill="#a9dcff" font-size="12">并发角色锁 · 多模态诊断图</text>
+
+            <!-- Arrow to Core -->
+            <line x1="645" y1="130" x2="725" y2="130" stroke="#3ddc97" stroke-width="2" marker-end="url(#arrow2)"/>
+
+            <!-- Core State -->
+            <rect x="730" y="46" width="245" height="168" rx="16" fill="#152240" stroke="#2f467a" stroke-width="1.6"/>
+            <text x="852" y="80" text-anchor="middle" fill="#a9dcff" font-size="13" font-weight="700">核心状态机 & 资产库</text>
+            <text x="852" y="110" text-anchor="middle" fill="#ffffff" font-size="13">project.json（四态验收）</text>
+            <text x="852" y="136" text-anchor="middle" fill="#9eb0d6" font-size="12">frames/ · audio/ · video/</text>
+            <text x="852" y="162" text-anchor="middle" fill="#9eb0d6" font-size="12">2x2 宫格 · 8帧条 · ROI 放大</text>
+            <text x="852" y="188" text-anchor="middle" fill="#8cf2c2" font-size="12">.flywheel/playbook.json</text>
+          </svg>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <h3>方式一：单窗口精简接入（推荐新手）</h3>
+            <p class="muted">用 <code>--profile core</code> 只暴露 16 个核心素材与审片接口，上下文更清爽：</p>
+            <div class="code-wrap">
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+              <pre><code>python -m story_media_orchestrator.cli mcp --transport streamable-http --host 127.0.0.1 --port 8780 --profile core</code></pre>
+            </div>
+          </div>
+          <div>
+            <h3>方式二：双端口专职并发（生图 + 审片分离）</h3>
+            <p class="muted">一个窗口只管生图注入，另一个窗口只管看片裁决，互不撞锁：</p>
+            <div class="code-wrap">
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+              <pre><code>python -m story_media_orchestrator.cli mcp --transport streamable-http --port 8781 --profile producer
+python -m story_media_orchestrator.cli mcp --transport streamable-http --port 8782 --profile critic</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <h3>直接复制给 AI 的审片指令模板</h3>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          <pre><code>请连接 story-media-supervisor，先调用 story_get_pipeline_snapshot 查看 ./demo-ep01 总览，再用 story_claim_takeover(role="critic") 拿锁。
+对未通过镜头逐个调用 story_inspect_shot_multimodal 查看首帧、2x2 诊断格和 8 帧条带，按角色一致性、动作连贯性、无伪字幕、音画同步提交 story_submit_quality_verdict，完成后释放租约。</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: QA & REWORK -->
+    <section id="qa" class="panel">
+      <div class="card">
+        <h2>分级仲裁漏斗：先零费用硬门，再按需升级二审</h2>
+        <p class="muted">不让大模型为黑帧或残缺文件浪费 token，也不让每镜都重复调用多个模型。</p>
+
+        <div class="diagram-box">
+          <svg viewBox="0 0 980 185" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="28" width="210" height="124" rx="14" fill="#132d2a" stroke="#3ddc97" stroke-width="1.6"/>
+            <text x="125" y="58" text-anchor="middle" fill="#8cf2c2" font-size="12" font-weight="700">第一层 · 0 Token 硬门</text>
+            <text x="125" y="84" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">本地代码即时拦截</text>
+            <text x="125" y="108" text-anchor="middle" fill="#9eb0d6" font-size="12">缺文件 · 纯黑废帧</text>
+            <text x="125" y="128" text-anchor="middle" fill="#9eb0d6" font-size="12">分屏拼贴 · 17k+5 帧长</text>
+
+            <line x1="230" y1="90" x2="270" y2="90" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="275" y="28" width="215" height="124" rx="14" fill="#182a52" stroke="#56b6f7" stroke-width="1.6"/>
+            <text x="382" y="58" text-anchor="middle" fill="#a9dcff" font-size="12" font-weight="700">第二层 · 主审模型</text>
+            <text x="382" y="84" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">多模态主审评估</text>
+            <text x="382" y="108" text-anchor="middle" fill="#9eb0d6" font-size="12">明确 passed 直接放行</text>
+            <text x="382" y="128" text-anchor="middle" fill="#8cf2c2" font-size="12">不触发二审，省成本</text>
+
+            <line x1="490" y1="90" x2="530" y2="90" stroke="#ffb84d" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="535" y="28" width="215" height="124" rx="14" fill="#32234f" stroke="#ffb84d" stroke-width="1.6"/>
+            <text x="642" y="58" text-anchor="middle" fill="#ffd99a" font-size="12" font-weight="700">第三层 · 条件二审仲裁</text>
+            <text x="642" y="84" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">异构模型交叉复核</text>
+            <text x="642" y="108" text-anchor="middle" fill="#9eb0d6" font-size="12">仅 warning / unavailable</text>
+            <text x="642" y="128" text-anchor="middle" fill="#9eb0d6" font-size="12">或返工 ≥ 2 轮时触发</text>
+
+            <line x1="750" y1="90" x2="790" y2="90" stroke="#ff6b7a" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="795" y="28" width="165" height="124" rx="14" fill="#2d1927" stroke="#ff6b7a" stroke-width="1.6"/>
+            <text x="877" y="58" text-anchor="middle" fill="#ffb3bc" font-size="12" font-weight="700">保守仲裁原则</text>
+            <text x="877" y="84" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">硬伤绝不放行</text>
+            <text x="877" y="108" text-anchor="middle" fill="#9eb0d6" font-size="12">硬伤分歧 → failed</text>
+            <text x="877" y="128" text-anchor="middle" fill="#9eb0d6" font-size="12">主观分歧 → warning</text>
+          </svg>
+        </div>
+
+        <h3>常见画面问题分诊速查表</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>看到的问题</th>
+              <th>根因阶段</th>
+              <th>推荐低成本修法</th>
+              <th>状态处理</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>脸型/发色不对、出现水印或乱码汉字</td>
+              <td>静帧阶段</td>
+              <td>仅重绘该镜首帧（<code>rewrite_image_prompt</code>），保留配音</td>
+              <td><span class="pill fail">failed</span></td>
+            </tr>
+            <tr>
+              <td>首帧正常，但视频出现伪字幕、旁白张嘴、末尾僵死</td>
+              <td>单镜清理</td>
+              <td>删除画面台词原文、加闭唇/静音约束、裁尾</td>
+              <td><span class="pill warn">warning / failed</span></td>
+            </tr>
+            <tr>
+              <td>人物站桩不动、对砍姿势锁死</td>
+              <td>动作设计</td>
+              <td>改回动作起势首帧，拆成一镜一拍，勿把峰值图当首帧</td>
+              <td><span class="pill fail">failed</span></td>
+            </tr>
+            <tr>
+              <td>全镜通过四态验收与母带校验</td>
+              <td>可交付</td>
+              <td>合成终版 MP4 + 导出剪映草稿，经验沉淀入飞轮</td>
+              <td><span class="pill pass">passed</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>常用硬门禁与无人值守审片命令</h3>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          <pre><code># 四大确定性硬门禁
+python -m story_media_orchestrator.cli lint-handoff &lt;manifest.json&gt; --check-files
+python -m story_media_orchestrator.cli lint-h3-bundle &lt;bundle_dir&gt;
+python -m story_media_orchestrator.cli audit-speech &lt;chapter_dir&gt; --bundle &lt;review.json&gt;
+python -m story_media_orchestrator.cli verify-master &lt;final.mp4&gt;
+
+# 无人值守全工程批量审片（配置 GEMINI_API_KEY / XAI_API_KEY 环境变量后运行）
+python -m story_media_orchestrator.cli critic-panel ./demo-ep01 --all --only-pending --stage video --policy escalate --persist</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Story Media Orchestrator · Open-Core Interactive Guide · 离线可直接双击浏览器打开
+    </footer>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('section.panel');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        const target = document.getElementById(btn.dataset.target);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    function copyCode(btn) {
+      const code = btn.parentElement.querySelector('pre code')?.innerText || '';
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        const old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(() => { btn.textContent = old; }, 1400);
+      });
+    }
+  </script>
+</body>
+</html>
