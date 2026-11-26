@@ -105,13 +105,23 @@ class _NoRedirect(urllib_request.HTTPRedirectHandler):
 
 
 def _check_local_toolchain() -> dict[str, Any]:
+    import shutil
+
     ffmpeg_path: str | None = None
+    ffmpeg_source = "missing"
     ffmpeg_error: str | None = None
     try:
         ffmpeg_path = str(find_ffmpeg())
+        if os.environ.get("STORY_MEDIA_FFMPEG"):
+            ffmpeg_source = "env"
+        elif shutil.which("ffmpeg") and Path(shutil.which("ffmpeg") or "").resolve() == Path(ffmpeg_path).resolve():
+            ffmpeg_source = "system_path"
+        else:
+            ffmpeg_source = "imageio_ffmpeg_bundled"
     except Exception as exc:
         ffmpeg_error = str(exc)
 
+    ffprobe_path = shutil.which("ffprobe")
     cv2_version: str | None = None
     try:
         import cv2  # type: ignore
@@ -128,14 +138,30 @@ def _check_local_toolchain() -> dict[str, Any]:
     except Exception:
         pil_version = None
 
+    faster_whisper_available = importlib.util.find_spec("faster_whisper") is not None
+
+    install_hints: list[str] = []
+    if ffmpeg_path is None:
+        install_hints.append('pip install -e ".[preview]"  # 自带 imageio-ffmpeg，无需手动配系统 PATH')
+    if cv2_version is None or pil_version is None:
+        install_hints.append('pip install -e ".[preview,mcp]"  # 安装 Pillow + opencv-python + MCP')
+    if not faster_whisper_available:
+        install_hints.append('pip install -e ".[asr]"  # 可选：用于 audit-speech 对白 VAD+ASR 审计')
+
     return {
         "python_executable": sys.executable,
         "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
         "ffmpeg_available": ffmpeg_path is not None,
+        "ffmpeg_source": ffmpeg_source,
         "ffmpeg_path": ffmpeg_path,
         "ffmpeg_error": ffmpeg_error,
+        "ffprobe_available": ffprobe_path is not None,
+        "ffprobe_path": ffprobe_path,
+        "ffprobe_required": False,
         "cv2_version": cv2_version,
         "pillow_version": pil_version,
+        "faster_whisper_available": faster_whisper_available,
+        "install_hints": install_hints,
     }
 
 

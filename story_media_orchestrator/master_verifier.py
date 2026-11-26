@@ -10,7 +10,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
-import cv2
+try:
+    import cv2  # type: ignore
+except ImportError:  # Optional fallback to ffmpeg -i stream probing when opencv-python is not installed
+    cv2 = None
 
 from .h3_bundle import extract_dialogue_tags, normalize_dialogue_text
 from .local_media import find_ffmpeg
@@ -81,14 +84,56 @@ def _run_ffmpeg(args: list[str], *, ffmpeg_bin: str | None = None) -> str:
     return proc.stdout
 
 
-def probe_video_stream(mp4_path: Path) -> dict[str, Any]:
-    """Probe MP4 video dimensions, FPS, frame count, and duration via OpenCV."""
+def _probe_video_stream_via_ffmpeg(mp4_path: Path, *, ffmpeg_bin: str | None = None) -> dict[str, Any]:
+    """Fallback video stream probe using `ffmpeg -i` (works with bundled imageio-ffmpeg without ffprobe/cv2)."""
+    exe = ffmpeg_bin or find_ffmpeg()
+    proc = subprocess.run(
+        [exe, "-hide_banner", "-i", str(mp4_path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    out = proc.stdout or ""
+    w = h = 0
+    fps = 0.0
+    dur = 0.0
+    m_dur = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", out)
+    if m_dur:
+        dur = int(m_dur.group(1)) * 3600 + int(m_dur.group(2)) * 60 + float(m_dur.group(3))
+    for line in out.splitlines():
+        if "Video:" in line:
+            m_res = re.search(r"(?:,\s*|\s)(\d{2,5})x(\d{2,5})(?:\s|,|\[)", line)
+            if m_res:
+                w, h = int(m_res.group(1)), int(m_res.group(2))
+            m_fps = re.search(r"(\d+(?:\.\d+)?)\s*(?:fps|tbr)", line)
+            if m_fps:
+                fps = float(m_fps.group(1))
+            break
+    frames = int(round(dur * fps)) if (dur > 0 and fps > 0) else 0
+    return {
+        "exists": True,
+        "bytes": mp4_path.stat().st_size,
+        "width": w,
+        "height": h,
+        "fps": round(fps, 4),
+        "frames": frames,
+        "dur_sec": round(dur, 3),
+    }
+
+
+def probe_video_stream(mp4_path: Path, *, ffmpeg_bin: str | None = None) -> dict[str, Any]:
+    """Probe MP4 video dimensions, FPS, frame count, and duration via OpenCV or ffmpeg -i fallback."""
     p = Path(mp4_path)
     if not p.is_file():
         return {"exists": False, "bytes": 0, "width": 0, "height": 0, "fps": 0.0, "frames": 0, "dur_sec": 0.0}
+    if cv2 is None:
+        return _probe_video_stream_via_ffmpeg(p, ffmpeg_bin=ffmpeg_bin)
     cap = cv2.VideoCapture(str(p))
     if not cap.isOpened():
-        return {"exists": True, "bytes": p.stat().st_size, "width": 0, "height": 0, "fps": 0.0, "frames": 0, "dur_sec": 0.0}
+        return _probe_video_stream_via_ffmpeg(p, ffmpeg_bin=ffmpeg_bin)
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
