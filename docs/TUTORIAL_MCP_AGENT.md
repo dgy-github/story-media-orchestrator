@@ -52,7 +52,7 @@ python -m story_media_orchestrator.cli mcp --transport streamable-http --host 12
 # 生图/素材窗口（仅暴露 9 个素材生产与注入工具）
 python -m story_media_orchestrator.cli mcp --transport streamable-http --host 127.0.0.1 --port 8781 --profile producer
 
-# 审片/返工窗口（仅暴露 13 个多模态诊断、裁决与返工工具）
+# 审片/返工窗口（含剧本预演、多模态诊断、裁决、改剧本/插桥镜与验收工具）
 python -m story_media_orchestrator.cli mcp --transport streamable-http --host 127.0.0.1 --port 8782 --profile critic
 ```
 
@@ -78,3 +78,6 @@ python -m story_media_orchestrator.cli mcp --transport streamable-http --host 12
 
 ### 3. 单镜低成本外科返工
 > 请检查 `./demo-ep01` 的 `shot-02`，如果只是首帧构图或人物服饰漂移，优先调用 `story_intervene_and_rework_shot(strategy="rewrite_image_prompt")` 仅重绘首帧并保留已生成的配音，不要整集重跑。
+
+### 4. 前置「成片质量剧本预演」与视频失败回退改剧本
+> 请对 `./demo-ep01` 调用 `story_rehearse_script(genre="仙侠")` 执行成片质量剧本预演，结合历史 Demo 飞轮教训与题材缺失项，按 P0 → P1 顺序调用 `story_patch_script_beat` 补齐单镜可见动作，或调用 `story_insert_bridge_shot` 插入因果桥/反应镜；若后期某镜视频连续返工仍不过关，请直接回退调用 `story_patch_script_beat` 修改上游剧本（只清除该镜过期视觉缓存，不影响其他已通过镜头）。

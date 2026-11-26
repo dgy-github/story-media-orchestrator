@@ -30,7 +30,31 @@
 
 ---
 
-## 三、4 条开箱即用的硬门禁命令
+## 三、生图前必做：成片质量剧本预演 + 上游回退闭环
+
+很多视频“怎么改提示词都救不回来”，根因往往是**前置剧本缺少血肉、因果或把峰值态当首帧**。系统内置了 6 大剧本硬伤扫描与分题材预演：
+
+```bash
+# 1. 成片质量剧本预演（结合历史 Demo 飞轮教训 + 题材要素缺口 + 单镜硬伤）
+python -m story_media_orchestrator.cli rehearse-script ./demo-ep01 --genre xianxia
+
+# 2. 逐镜剧本细节审核（识别抽象心理、多动作过载、全屏亮光、峰值首帧、台词超长等）
+python -m story_media_orchestrator.cli audit-script ./demo-ep01
+
+# 3. 视频不过关时回退修改上游单镜剧本（只失效该镜视觉缓存，保留其他镜头与配音）
+python -m story_media_orchestrator.cli patch-script ./demo-ep01 shot-01 \
+  --text "陆南攥紧布囊，将最后半块干粮塞进阿石手里。" \
+  --visual-action "陆南低头将粗饼塞入阿石衣襟" \
+  --framing "近景" --location "雨夜石寨土墙边"
+
+# 4. 缺动机/反应/余波时，在指定锚点后插入因果桥镜（不打乱原有镜号与缓存）
+python -m story_media_orchestrator.cli insert-bridge ./demo-ep01 shot-01 \
+  --text "阿石眼眶发红，按住陆南手腕又缓缓松开。" --story-role reaction_handoff
+```
+
+---
+
+## 四、4 条开箱即用的硬门禁命令
 
 在合成本集最终母带之前，建议依次跑这几个确定性代码校验（零大模型费用）：
 
@@ -50,7 +74,7 @@ python -m story_media_orchestrator.cli verify-master <final.mp4>
 
 ---
 
-## 四、进阶：无人值守多模型自动审片（CLI）
+## 五、进阶：无人值守多模型自动审片（CLI）
 
 如果你有自己的视觉模型 API Key（例如 Gemini / Grok / DashScope 等 OpenAI 兼容接口），可以不打开客户端窗口，直接用命令行批量自动审片：
 

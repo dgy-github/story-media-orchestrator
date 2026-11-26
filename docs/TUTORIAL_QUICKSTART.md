@@ -39,6 +39,18 @@ python -m story_media_orchestrator.cli create demo-ep01 "林雾撑伞走过雨�
 
 ---
 
+## 第二步（进阶推荐）：生图前跑一次「成片质量剧本预演」
+
+在正式花钱生图和出视频之前，先让系统结合过往成片 Demo 经验（`.flywheel`）与题材要素，预演一遍剧本有没有缺血肉、动作过载或抽象特效漏洞：
+
+```bash
+python -m story_media_orchestrator.cli rehearse-script demo-ep01 --genre urban_suspense
+```
+
+系统会返回就绪分（0–100）、题材缺失项与优先级修复建议（`P0/P1`）；如果有问题，可直接用 `patch-script` 修单镜或 `insert-bridge` 插因果桥镜。
+
+---
+
 ## 第三步：零成本跑通预览版成片（Preview 模式）
 
 先不调用任何付费模型，用内置的本地预览模式把整条链路（分镜卡 → 本地静音/系统语音 → 画面动效 → 字幕 → MP4 合成）跑通：

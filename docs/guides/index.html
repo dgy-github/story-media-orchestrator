@@ -259,8 +259,9 @@
     <nav class="tabs" role="tablist">
       <button class="tab-btn active" data-target="overview">1. 架构全景图</button>
       <button class="tab-btn" data-target="quickstart">2. 10 分钟零门槛上手</button>
-      <button class="tab-btn" data-target="mcp">3. MCP 多 Agent 协同</button>
-      <button class="tab-btn" data-target="qa">4. 质量验收与低成本返工</button>
+      <button class="tab-btn" data-target="rehearsal">3. 剧本预演与上游回退</button>
+      <button class="tab-btn" data-target="mcp">4. MCP 多 Agent 协同</button>
+      <button class="tab-btn" data-target="qa">5. 质量验收与低成本返工</button>
     </nav>
 
     <!-- TAB 1: OVERVIEW -->
@@ -427,7 +428,85 @@ python -m story_media_orchestrator.cli doctor</code></pre>
       </div>
     </section>
 
-    <!-- TAB 3: MCP -->
+    <!-- TAB 3: SCRIPT REHEARSAL & UPSTREAM REWIND -->
+    <section id="rehearsal" class="panel">
+      <div class="card">
+        <h2>成片质量剧本预演 &amp; 视频失败回退改剧本闭环</h2>
+        <p class="muted">
+          视频不好看，80% 的根因在前置剧本缺少血肉与因果。生图前先跑 <code>rehearse-script</code> 结合历史成片 Demo 经验与题材要素做预演；后期视频连续不过关时，直接回退上游修单镜剧本或插因果桥镜，不炸全集缓存。
+        </p>
+
+        <div class="diagram-box">
+          <svg viewBox="0 0 980 215" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="24" width="210" height="106" rx="14" fill="#1b2c54" stroke="#56b6f7" stroke-width="1.6"/>
+            <text x="125" y="54" text-anchor="middle" fill="#a9dcff" font-size="12" font-weight="700">前置剧本预演</text>
+            <text x="125" y="78" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">rehearse-script</text>
+            <text x="125" y="102" text-anchor="middle" fill="#9eb0d6" font-size="11.5">Demo 飞轮 + 题材缺口 + 6大硬伤</text>
+
+            <line x1="230" y1="77" x2="270" y2="77" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="275" y="24" width="205" height="106" rx="14" fill="#172d3a" stroke="#3ddc97" stroke-width="1.6"/>
+            <text x="377" y="54" text-anchor="middle" fill="#8cf2c2" font-size="12" font-weight="700">生图与视频渲染</text>
+            <text x="377" y="78" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">首帧 + 配音 + 视频</text>
+            <text x="377" y="102" text-anchor="middle" fill="#9eb0d6" font-size="11.5">按单镜指纹独立缓存</text>
+
+            <line x1="480" y1="77" x2="520" y2="77" stroke="#56b6f7" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="525" y="24" width="205" height="106" rx="14" fill="#2d2259" stroke="#7c6cff" stroke-width="1.6"/>
+            <text x="627" y="54" text-anchor="middle" fill="#c7bfff" font-size="12" font-weight="700">多模态审片诊断</text>
+            <text x="627" y="78" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">发现剧本/动作硬伤</text>
+            <text x="627" y="102" text-anchor="middle" fill="#9eb0d6" font-size="11.5">站桩锁死 / 缺因果 / 连续≥2轮失败</text>
+
+            <line x1="730" y1="77" x2="770" y2="77" stroke="#3ddc97" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <rect x="775" y="24" width="185" height="106" rx="14" fill="#144d3e" stroke="#3ddc97" stroke-width="1.6"/>
+            <text x="867" y="54" text-anchor="middle" fill="#8cf2c2" font-size="12" font-weight="700">验收通过</text>
+            <text x="867" y="78" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">进入母带与飞轮</text>
+            <text x="867" y="102" text-anchor="middle" fill="#a9dcff" font-size="11.5">经验沉淀指导下一集</text>
+
+            <!-- Upstream Rewind Path -->
+            <path d="M 627 130 L 627 182 L 125 182 L 125 136" fill="none" stroke="#ffb84d" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#arrow)"/>
+            <rect x="210" y="160" width="340" height="40" rx="10" fill="#332512" stroke="#ffb84d" stroke-width="1.3"/>
+            <text x="380" y="185" text-anchor="middle" fill="#ffd99a" font-size="12.5" font-weight="700">回退上游：patch-script 改单镜 / insert-bridge 插因果桥</text>
+          </svg>
+        </div>
+
+        <div class="grid-3">
+          <div class="mini-card">
+            <div class="kicker">6 大剧本硬伤拦截</div>
+            <h4>告别空洞心理与全屏白光</h4>
+            <p>自动拦截抽象情绪无动作、单镜塞多动作、全屏亮光敷衍、峰值态当首帧、缺景别位置锚点、引号台词混入画面。</p>
+          </div>
+          <div class="mini-card">
+            <div class="kicker">分题材缺口检查</div>
+            <h4>仙侠 / 悬疑 / 言情定向补肉</h4>
+            <p>自动检查题材必备要素（如仙侠的人间代价、攻防空间因果、阶段发色法器锁定与战后余波），并回灌历史 Demo 飞轮教训。</p>
+          </div>
+          <div class="mini-card">
+            <div class="kicker">精准缓存失效</div>
+            <h4>改剧本不炸全集</h4>
+            <p><code>patch-script</code> 只失效该镜过期视觉资产；<code>insert-bridge</code> 按锚点插桥镜，前后已通过镜头 100% 保留。</p>
+          </div>
+        </div>
+
+        <h3>剧本预演与上游回退常用命令</h3>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          <pre><code># 1. 生图前跑成片质量剧本预演（支持 xianxia / urban_suspense / romance / general）
+python -m story_media_orchestrator.cli rehearse-script ./demo-ep01 --genre xianxia
+
+# 2. 视频不过关时，回退修改上游单镜剧本（仅清除该镜过期视觉缓存）
+python -m story_media_orchestrator.cli patch-script ./demo-ep01 shot-01 \
+  --text "陆南攥紧布囊，将最后半块干粮塞进阿石手里。" --framing "近景" --location "雨夜石寨土墙边"
+
+# 3. 缺动机或反应拍时，在指定镜号后插入因果桥镜
+python -m story_media_orchestrator.cli insert-bridge ./demo-ep01 shot-01 \
+  --text "阿石眼眶发红，按住陆南手腕又缓缓松开。" --story-role reaction_handoff</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: MCP -->
     <section id="mcp" class="panel">
       <div class="card">
         <h2>MCP 多 Agent 并发协同架构</h2>
