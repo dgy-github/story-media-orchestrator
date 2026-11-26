@@ -2,11 +2,16 @@
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
+import importlib.util
+import json
 import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 from .adapters import HttpStoryCampaignAdapter, StoryCampaignAdapter, StoryImageAdapter, StoryVideoAdapter
 from .pipeline import SingleSceneOrchestrator
@@ -29,6 +34,51 @@ class RuntimeConfig:
         if not image.is_dir() or not video.is_dir():
             raise RuntimeError("STORY_IMAGE_AGENT_ROOT and STORY_VIDEO_AGENT_ROOT must be existing directories")
         return cls(image, video, artifact)
+
+
+def resolve_sibling_root(repo_name: str, dist_name: str = "", strip_suffix: str = "", module_name: str = "") -> Path:
+    """Resolve a sibling repository root from workspace, editable metadata, or installed spec."""
+    workspace_root = Path(__file__).resolve().parents[2]
+    sibling = workspace_root / repo_name
+    if sibling.is_dir():
+        return sibling
+    if dist_name:
+        try:
+            dist = importlib.metadata.distribution(dist_name)
+            direct_url = dist.read_text("direct_url.json")
+            if direct_url:
+                info = json.loads(direct_url)
+                url = info.get("url", "")
+                if url.startswith("file://"):
+                    candidate = Path(url2pathname(urlparse(url).path))
+                    if strip_suffix and candidate.name == strip_suffix:
+                        candidate = candidate.parent
+                    if candidate.is_dir():
+                        return candidate
+            for rel_file in dist.files or ():
+                if str(rel_file).endswith(".pth"):
+                    pth_path = Path(dist.locate_file(rel_file))
+                    if pth_path.is_file():
+                        for line in pth_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+                            line = line.strip()
+                            if line and not line.startswith("#") and not line.startswith("import "):
+                                candidate = Path(line)
+                                if strip_suffix and candidate.name == strip_suffix:
+                                    candidate = candidate.parent
+                                if candidate.is_dir():
+                                    return candidate
+        except importlib.metadata.PackageNotFoundError:
+            pass
+    if module_name:
+        try:
+            spec = importlib.util.find_spec(module_name)
+            if spec and spec.origin:
+                candidate = Path(spec.origin).resolve().parents[1]
+                if "site-packages" not in candidate.parts and candidate.is_dir():
+                    return candidate
+        except (ImportError, ValueError, OSError):
+            pass
+    return sibling
 
 
 def _import_from_root(root: Path, module: str) -> Any:
@@ -56,6 +106,8 @@ def build_runtime(*, story_runner: Callable[..., dict[str, Any]], config: Runtim
         provider.size = provider._normalize_size(cfg.models.image_size)
     video_workflow = video_pkg.VideoPromptWorkflow("story-media-orchestrator")
     comfy = video_client or video_pkg.ComfyUIAdapter.from_environment()
+    if video_client is None and comfy is not None and hasattr(comfy, "timeout"):
+        comfy.timeout = float(os.environ.get("MINIMAX_H3_COMFYUI_TIMEOUT") or "180.0")
     registry = ArtifactRegistry(cfg.artifact_root)
     return SingleSceneOrchestrator(
         StoryCampaignAdapter(story_runner).run,

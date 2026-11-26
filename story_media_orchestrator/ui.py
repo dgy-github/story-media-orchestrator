@@ -12,13 +12,15 @@ from pathlib import Path
 from typing import Any, Callable
 from urllib import request as url_request
 
+from .runtime import resolve_sibling_root as _resolve_sibling_root
+
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 
 DEFAULTS = {
-    "STORY_CAMPAIGN_ROOT": str(WORKSPACE_ROOT / "microcodex-short-drama-studio"),
-    "STORY_IMAGE_AGENT_ROOT": str(WORKSPACE_ROOT / "story-image-agent"),
-    "STORY_VIDEO_AGENT_ROOT": str(WORKSPACE_ROOT / "story-video-agent"),
+    "STORY_CAMPAIGN_ROOT": str(_resolve_sibling_root("microcodex-short-drama-studio", "microcodex-story-campaign-adapter", "sidecar")),
+    "STORY_IMAGE_AGENT_ROOT": str(_resolve_sibling_root("story-image-agent", "microcodex-story-image-agent", module_name="story_image_agent")),
+    "STORY_VIDEO_AGENT_ROOT": str(_resolve_sibling_root("story-video-agent", "microcodex-story-video-agent", module_name="story_video_agent")),
     "STORY_MODEL": "configured-by-story-runtime",
     "STORY_IMAGE_MODEL": "wan2.2-t2i-flash",
     "STORY_IMAGE_SIZE": "720*1280",

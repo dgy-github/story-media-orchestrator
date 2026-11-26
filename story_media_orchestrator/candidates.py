@@ -28,11 +28,13 @@ def select_candidate(manifest, shot_id, candidate_id, role='image'):
 def generate_candidates(manifest, root, shot_id, count=2):
     if type(count) is not int or not 1 <= count <= 8:
         raise ValueError('candidate count must be 1 to 8')
-    if manifest.image_source != 'dashscope':
-        raise ValueError('candidate generation requires DashScope image source')
+    if manifest.image_source not in {'dashscope', 'codex'}:
+        raise ValueError('candidate generation requires DashScope or Codex image source')
+    from dataclasses import replace
     from .providers import build_project_image_provider
     from .quality import evaluate_artifact
     from .preview import _shot_cache_key
+    from .registry import ArtifactRegistry
     root = Path(root).resolve()
     shot = manifest.shot(shot_id)
     provider = build_project_image_provider(manifest, root)
@@ -40,11 +42,64 @@ def generate_candidates(manifest, root, shot_id, count=2):
     # reuses the existing adapter receipts instead of billing twice.
     shot.candidate_batch = shot.candidate_batch or uuid4().hex
     manifest.save(root/'project.json')
-    result = provider.adapter.run({**shot.scene_context, 'summary':shot.text,
-        'description':shot.scene_context.get('visual_action') or shot.text,
-        'action':shot.scene_context.get('visual_action') or shot.text},
-        shot.scene_context.get('source_spans') or [shot.scene_id, shot.id],
-        candidate_count=count, batch_id=shot.candidate_batch)
+
+    if manifest.image_source == 'codex':
+        registry = ArtifactRegistry(root / 'artifacts')
+        directory = root / 'candidates' / shot.id
+        directory.mkdir(parents=True, exist_ok=True)
+        succeeded = 0
+        for index in range(count):
+            candidate_id = f'{shot.candidate_batch}-{index}'
+            if any(c['id'] == candidate_id for c in shot.candidates):
+                succeeded += 1
+                continue
+            target = directory / f'{candidate_id}.png'
+            variant_shot = replace(
+                shot,
+                seed_override=(int(shot.seed_override) if shot.seed_override is not None else 1000) + index * 7919,
+            )
+            generated_path = Path(provider.generate(variant_shot, target))
+            ref = registry.put_bytes(generated_path.read_bytes())
+            shot.candidates.append({
+                'id': candidate_id,
+                'path': str(generated_path),
+                'artifact_ref': ref,
+                'source_key': _shot_cache_key(manifest, shot),
+                'quality': evaluate_artifact({'status': 'succeeded', 'artifact_ref': ref}, 'image'),
+            })
+            succeeded += 1
+            manifest.save(root / 'project.json')
+        if succeeded == 0:
+            raise RuntimeError('no successful candidates')
+        if succeeded == count:
+            shot.candidate_batch = None
+        manifest.approvals.pop('assets', None)
+        manifest.save(root / 'project.json')
+        return
+
+    from .character_bible import build_consistent_image_scene
+    from .providers import StoryImageProvider
+
+    base_scene = {
+        **shot.scene_context,
+        'summary': shot.text,
+        'description': shot.scene_context.get('visual_action') or shot.text,
+        'action': shot.scene_context.get('visual_action') or shot.text,
+    }
+    consistent_scene, conditioning = build_consistent_image_scene(
+        manifest,
+        shot,
+        base_scene,
+        for_candidates=True,
+        candidate_count=count,
+    )
+    with StoryImageProvider._inject_transport_conditioning(getattr(provider.adapter, 'provider', None), conditioning):
+        result = provider.adapter.run(
+            consistent_scene,
+            shot.scene_context.get('source_spans') or [shot.scene_id, shot.id],
+            candidate_count=count,
+            batch_id=shot.candidate_batch,
+        )
     outputs = result.get('candidate_results', [])
     directory = root/'candidates'/shot.id
     directory.mkdir(parents=True, exist_ok=True)

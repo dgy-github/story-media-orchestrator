@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "story-media-supervisor": {
+      "command": "python",
+      "args": [
+        "-m",
+        "story_media_orchestrator.mcp_server",
+        "--transport",
+        "stdio",
+        "--profile",
+        "core",
+        "--flywheel-dir",
+        "/path/to/story-media-orchestrator/.flywheel"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/story-media-orchestrator"
+      }
+    }
+  },
+  "_codex_config_toml_example": [
+    "[mcp_servers.story_media_supervisor]",
+    "command = \"python\"",
+    "args = [\"-m\", \"story_media_orchestrator.mcp_server\", \"--transport\", \"stdio\", \"--profile\", \"core\", \"--flywheel-dir\", \"/path/to/story-media-orchestrator/.flywheel\"]",
+    "env = { PYTHONPATH = \"/path/to/story-media-orchestrator\" }"
+  ],
+  "_shared_multi_agent_http_example": {
+    "start_command": "python -m story_media_orchestrator.cli mcp --transport streamable-http --host 127.0.0.1 --port 8780 --profile core",
+    "url": "http://127.0.0.1:8780/mcp",
+    "roles": {
+      "producer": "story_claim_takeover(project_dir, supervisor_id='producer-agent', role='asset_producer')",
+      "critic": "story_claim_takeover(project_dir, supervisor_id='critic-agent', role='critic')"
+    }
+  }
+}

@@ -9,7 +9,11 @@ def persist_video_result(result, request, registry):
     recorded["associated_image_refs"] = list(dict.fromkeys(
         request[key] for key in ("first_frame_ref", "last_frame_ref") if request.get(key)))
     provider = request.get("video_provider", "comfyui")
-    fields = ("video_model", "video_size", "duration_seconds", "negative_prompt", "batch_id") if provider == "dashscope" else ("turbo", "seed", "width", "height", "length", "fps")
+    fields = (
+        ("video_model", "video_size", "duration_seconds", "negative_prompt", "batch_id", "resolution", "workflow_mode")
+        if provider == "dashscope"
+        else ("turbo", "seed", "width", "height", "length", "fps", "workflow_mode")
+    )
     defaults = ({"video_model": "wanx2.1-t2v-turbo", "video_size": "1280*720", "duration_seconds": 5}
                 if provider == "dashscope" else {"turbo": False, "seed": 0, "width": 864, "height": 480, "length": 124, "fps": 24.0})
     scene = request.get("scene") or {}

@@ -8,7 +8,8 @@ import json
 import math
 import time
 from uuid import uuid4
-from urllib import request as http_request, error as http_error
+from urllib import parse as http_parse, request as http_request, error as http_error
+from pathlib import Path
 from typing import Any, Callable
 
 from .registry import ArtifactRegistry
@@ -208,25 +209,97 @@ class StoryVideoAdapter:
         except TimeoutError as exc:
             raise TimeoutError(f"ComfyUI task still pending; prompt_id={task_id}; do not resubmit automatically") from exc
 
+    def _resolve_or_upload_comfy_image(self, artifact_ref: str, *, role: str = "first") -> str:
+        if not isinstance(artifact_ref, str) or not artifact_ref.strip():
+            raise ValueError(f"{role}_frame_ref must be a non-empty artifact reference")
+        digest_part = artifact_ref.rsplit("/", 1)[-1][:16] or role
+        filename = f"h3_{digest_part}_{role}.png"
+        img_bytes: bytes | None = None
+        if self.registry is not None:
+            img_bytes = self.registry.get_bytes(artifact_ref)
+        if img_bytes is not None:
+            upload_fn = getattr(self.comfy, "upload_image", None)
+            if callable(upload_fn):
+                return str(upload_fn(img_bytes, filename))
+            base_url = getattr(self.comfy, "base_url", None)
+            opener = getattr(self.comfy, "_opener", None)
+            if isinstance(base_url, str) and base_url and opener is not None:
+                boundary = f"----StoryMediaBoundary{uuid4().hex}"
+                body = b"".join(
+                    [
+                        f"--{boundary}\r\n".encode("ascii"),
+                        f'Content-Disposition: form-data; name="image"; filename="{filename}"\r\n'.encode("utf-8"),
+                        b"Content-Type: image/png\r\n\r\n",
+                        img_bytes,
+                        b"\r\n",
+                        f"--{boundary}\r\n".encode("ascii"),
+                        b'Content-Disposition: form-data; name="overwrite"\r\n\r\ntrue\r\n',
+                        f"--{boundary}--\r\n".encode("ascii"),
+                    ]
+                )
+                path = "/upload/image"
+                token = getattr(self.comfy, "token", None)
+                if token is not None:
+                    path = f"{path}?token={http_parse.quote(str(token), safe='')}"
+                req = http_request.Request(
+                    f"{base_url.rstrip('/')}{path}",
+                    data=body,
+                    method="POST",
+                    headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+                )
+                try:
+                    with opener.open(req, timeout=max(60.0, float(getattr(self.comfy, "timeout", 180.0)))) as response:
+                        payload = self.comfy._decode_response(response)
+                except http_error.HTTPError as exc:
+                    raise_fn = getattr(self.comfy, "_raise_http_error", None)
+                    if callable(raise_fn):
+                        raise_fn(exc)
+                    raise
+                if isinstance(payload, dict) and payload.get("name"):
+                    return str(payload["name"])
+        return filename
+
     def run(self, *, first_frame_ref: str, last_frame_ref: str | None = None,
             story_spans: list[str], shot: dict[str, Any] | None = None,
             scene: dict[str, Any] | None = None,
             action_unit: dict[str, Any] | None = None, prompt: str | None = None, seed: int = 0,
             width: int = 864, height: int = 480, length: int = 124, fps: float = 24.0,
-            quality: dict[str, Any] | None = None) -> dict[str, Any]:
+            quality: dict[str, Any] | None = None, workflow_mode: str = "t2v",
+            upscale_resolution: str | None = None,
+            character_ref_images: list[str] | None = None,
+            object_info: dict[str, Any] | None = None) -> dict[str, Any]:
+        if workflow_mode not in {"t2v", "i2v"}:
+            raise ValueError(f"unsupported workflow_mode: {workflow_mode}")
+        if workflow_mode == "i2v" and (not isinstance(first_frame_ref, str) or not first_frame_ref.strip()):
+            raise ValueError("first_frame_ref is required when workflow_mode='i2v'")
+        if upscale_resolution is not None and upscale_resolution not in {"480P", "720P", "1080P"}:
+            raise ValueError(f"unsupported upscale_resolution: {upscale_resolution}")
         if (type(length) is not int or length < 1 or isinstance(fps, bool)
                 or not isinstance(fps, (int, float)) or not math.isfinite(fps) or fps <= 0
                 or length / fps < 1):
             raise ValueError("video duration must be finite and at least one second")
         build = self.workflow.build_pipeline_v2 if action_unit is not None else self.workflow.build_pipeline
+        effective_plan_ref = first_frame_ref
+        if workflow_mode == "t2v" and (not isinstance(first_frame_ref, str) or not first_frame_ref.strip()):
+            if character_ref_images and self.registry is not None and Path(str(character_ref_images[0])).is_file():
+                effective_plan_ref = self.registry.put_bytes(Path(str(character_ref_images[0])).read_bytes())
+            else:
+                effective_plan_ref = "artifact://sha256/" + ("0" * 64)
         pipeline = build(
-            first_frame_ref, story_spans, shot or scene or {}, coarse_duration_seconds=length / fps,
+            effective_plan_ref, story_spans, shot or scene or {}, coarse_duration_seconds=length / fps,
             action_unit=action_unit,
             quality=quality,
         )
+        if workflow_mode == "i2v" or (first_frame_ref and last_frame_ref):
+            active_mode = "first_last_frame_to_video" if last_frame_ref else "image_to_video"
+        else:
+            active_mode = "text_to_video"
         result: dict[str, Any] = {"schema": pipeline["schema"], "pipeline": pipeline, "status": "planned",
                                   "review_status": "pending" if quality is None else "evaluated",
-                                  "conditioning_mode": "text_to_video" if self.comfy is not None else "planned_image_reference"}
+                                  "workflow_mode": workflow_mode,
+                                  "conditioning_mode": active_mode if self.comfy is not None else "planned_image_reference"}
+        if character_ref_images:
+            result["character_ref_images"] = list(character_ref_images)
         if self.comfy is not None:
             if action_unit is not None:
                 raise ValueError("当前 ComfyUI 执行图未接入动作控制；请使用支持控制计划的执行器，不能用普通文生视频替代")
@@ -235,7 +308,67 @@ class StoryVideoAdapter:
             if not prompt:
                 raise ValueError("prompt is required for ComfyUI execution")
             from story_video_agent import build_minimax_h3_workflow
+            from .h3_frame_ports import apply_frame_links, resolve_frame_ports
             turbo = getattr(self.models, "video_turbo", False) if self.models is not None else False
-            result["execution"] = self._execute_comfy(build_minimax_h3_workflow(prompt=prompt, turbo=turbo, seed=seed, width=width, height=height, length=length, fps=fps))
+            graph = build_minimax_h3_workflow(prompt=prompt, turbo=turbo, seed=seed, width=width, height=height, length=length, fps=fps)
+            schema = object_info
+            if not isinstance(schema, dict):
+                maybe_schema = getattr(self.comfy, "object_info", None)
+                schema = maybe_schema if isinstance(maybe_schema, dict) else None
+            port_spec = resolve_frame_ports(schema)
+            result["frame_port_contract"] = {
+                "first": port_spec.first,
+                "last": port_spec.last,
+                "source": port_spec.source,
+            }
+            use_frame_conditioning = (workflow_mode == "i2v") or bool(first_frame_ref and last_frame_ref)
+            if use_frame_conditioning:
+                first_name = self._resolve_or_upload_comfy_image(first_frame_ref, role="first")
+                graph["20"] = {"class_type": "LoadImage", "inputs": {"image": first_name}}
+                last_link = None
+                if last_frame_ref:
+                    last_name = self._resolve_or_upload_comfy_image(last_frame_ref, role="last")
+                    graph["21"] = {"class_type": "LoadImage", "inputs": {"image": last_name}}
+                    last_link = ["21", 0]
+                apply_frame_links(
+                    graph["5"]["inputs"],
+                    port_spec,
+                    first_link=["20", 0],
+                    last_link=last_link,
+                )
+            elif character_ref_images:
+                first_char = str(character_ref_images[0])
+                char_ref_ref = (
+                    self.registry.put_bytes(Path(first_char).read_bytes())
+                    if (self.registry is not None and Path(first_char).is_file())
+                    else first_char
+                )
+                char_name = self._resolve_or_upload_comfy_image(char_ref_ref, role="char_ref")
+                graph["23"] = {"class_type": "LoadImage", "inputs": {"image": char_name}}
+                apply_frame_links(
+                    graph["5"]["inputs"],
+                    port_spec,
+                    first_link=["23", 0],
+                )
+                result["character_ref_uploaded"] = char_name
+            if upscale_resolution in {"720P", "1080P"}:
+                if width > height:
+                    up_w, up_h = (1280, 720) if upscale_resolution == "720P" else (1920, 1080)
+                elif height > width:
+                    up_w, up_h = (720, 1280) if upscale_resolution == "720P" else (1080, 1920)
+                else:
+                    up_w, up_h = (720, 720) if upscale_resolution == "720P" else (1088, 1088)
+                graph["22"] = {
+                    "class_type": "ImageScale",
+                    "inputs": {
+                        "image": ["11", 0],
+                        "upscale_method": "lanczos",
+                        "width": up_w,
+                        "height": up_h,
+                        "crop": "disabled",
+                    },
+                }
+                graph["13"]["inputs"]["images"] = ["22", 0]
+            result["execution"] = self._execute_comfy(graph)
             result["status"] = result["execution"]["state"]
         return result

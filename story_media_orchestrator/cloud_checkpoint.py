@@ -13,7 +13,7 @@ from .providers import StoryImageProvider
 
 class CheckpointedStoryImageProvider(StoryImageProvider):
     def __init__(self, adapter, registry, manifest, root):
-        super().__init__(adapter, registry)
+        super().__init__(adapter, registry, manifest=manifest)
         self.manifest, self.root = manifest, root
 
     def generate(self, shot, output):

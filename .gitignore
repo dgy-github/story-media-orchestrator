@@ -16,3 +16,21 @@ preview-project/
 *.log
 .pytest_cache/
 *.egg-info/
+
+# Closed-source runtime data, quality flywheel, and local projects
+.flywheel/
+/projects/*
+!/projects/xinhuo-ji-v3-series/
+!/projects/xinhuo-ji-v3r2-series/
+/projects/xinhuo-ji-v3-series/*
+/projects/xinhuo-ji-v3r2-series/*
+!/projects/xinhuo-ji-v3-series/assemble_v3_chapter.py
+!/projects/xinhuo-ji-v3-series/assemble_v3_full_16ch_master.py
+!/projects/xinhuo-ji-v3-series/render_v3_wave.py
+!/projects/xinhuo-ji-v3-series/v3_pipeline_lib.py
+!/projects/xinhuo-ji-v3r2-series/assemble_v3r2_all.py
+!/projects/xinhuo-ji-v3r2-series/render_v3r2_revision.py
+.takeover.lock
+**/.takeover.lock
+mcp_config.json
+!mcp_config.example.json

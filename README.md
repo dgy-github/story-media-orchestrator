@@ -94,6 +94,7 @@ python -m story_media_orchestrator.cli run my-story --real-preview --image-sourc
 
 - [安装、运行与常见问题](docs/GETTING_STARTED.md)
 - [已验证能力与当前限制](docs/VERIFICATION.md)
+- [动漫短剧多模态质检标准](docs/ANIME_QA_RUBRIC.md)
 - [合作方式与需求说明](docs/COLLABORATION.md)
 - [架构目标](GOALS.md)
 - [开发与贡献](CONTRIBUTING.md)
